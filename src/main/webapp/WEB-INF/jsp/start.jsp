@@ -10,16 +10,12 @@
 		margin: 0;
 		min-height: 100vh;
 		display: flex;
-		hlex-direction: column;
-		justify-content: center;
+		flex-direction: column;
 		align-items:center;
 	}
 </style>
 </head>
 <body>
-<header>
-
-</header>
 <h2>フレネミー診断</h2>
 <h3>この診断を受けた人数:10人</h3>
 <input type="submit" value="スタート">
