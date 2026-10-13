@@ -11,4 +11,14 @@
     <welcome-file>default.jsp</welcome-file>
     <welcome-file>default.xhtml</welcome-file>
   </welcome-file-list>
+  <servlet>
+    <description></description>
+    <display-name>StertTest</display-name>
+    <servlet-name>StertTest</servlet-name>
+    <servlet-class>test.StertTest</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>StertTest</servlet-name>
+    <url-pattern>/StertTest</url-pattern>
+  </servlet-mapping>
 </web-app>
