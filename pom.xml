@@ -24,6 +24,23 @@
       <version>4.0.0</version>
       <scope>provided</scope>
     </dependency>
+    <!-- JSTL（c:forEach / c:out など） -->
+    <dependency>
+      <groupId>jakarta.servlet.jsp.jstl</groupId>
+      <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
+      <version>3.0.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.web</groupId>
+      <artifactId>jakarta.servlet.jsp.jstl</artifactId>
+      <version>3.0.1</version>
+    </dependency>
+    <!-- H2 JDBCドライバ（共用H2サーバーにTCP接続する） -->
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <version>2.3.232</version>
+    </dependency>
     <!-- Tailwind CSS（ブラウザ版）。WEB-INF/lib に入り /webjars/... で配信される -->
     <dependency>
       <groupId>org.webjars.npm</groupId>
