@@ -1,7 +1,6 @@
 package dao;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,11 +12,6 @@ import model.Choice;
 import model.Question;
 
 public class QuestionDAO {
-	private final String JDBC_URL =
-			"jdbc:h2:tcp://10.23.104.249/~/frenemy";
-	private final String DB_USER = "sa";
-	private final String DB_PASS = "";
-
 	/** 1つの特性から出す問題数 */
 	private static final int QUESTIONS_PER_PERSONALITY = 5;
 
@@ -31,9 +25,7 @@ public class QuestionDAO {
 	 */
 	public List<Question> findQuiz() {
 		List<Question> quizList = new ArrayList<>();
-		loadDriver();
-		try (Connection conn = DriverManager.getConnection(
-				JDBC_URL, DB_USER, DB_PASS)) {
+		try (Connection conn = DbConfig.getConnection()) {
 
 			//特性IDの一覧を取得
 			List<Integer> personalityIds = new ArrayList<>();
@@ -80,9 +72,7 @@ public class QuestionDAO {
 	 */
 	public List<Choice> findChoices() {
 		List<Choice> choices = new ArrayList<>();
-		loadDriver();
-		try (Connection conn = DriverManager.getConnection(
-				JDBC_URL, DB_USER, DB_PASS)) {
+		try (Connection conn = DbConfig.getConnection()) {
 
 			String sql = "SELECT choice_id, label FROM answer_select ORDER BY choice_id";
 			try (PreparedStatement pStmt = conn.prepareStatement(sql);
@@ -108,14 +98,6 @@ public class QuestionDAO {
 						rs.getString("type"),
 						rs.getInt("personality_id")));
 			}
-		}
-	}
-
-	private void loadDriver() {
-		try {
-			Class.forName("org.h2.Driver");
-		} catch (ClassNotFoundException e) {
-			throw new IllegalStateException("JDBCドライバを読み込めませんでした");
 		}
 	}
 }
