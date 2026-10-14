@@ -24,6 +24,12 @@
       <version>4.0.0</version>
       <scope>provided</scope>
     </dependency>
+    <!-- Tailwind CSS（ブラウザ版）。WEB-INF/lib に入り /webjars/... で配信される -->
+    <dependency>
+      <groupId>org.webjars.npm</groupId>
+      <artifactId>tailwindcss__browser</artifactId>
+      <version>4.1.8</version>
+    </dependency>
   </dependencies>
 
   <build>
