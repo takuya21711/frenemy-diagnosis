@@ -9,6 +9,8 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import dao.CounterDAO;
+
 /**
  * Servlet implementation class StartServlet
  */
@@ -22,9 +24,9 @@ public class StartServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response)
 					throws ServletException, IOException {
-		//仮の人数
-		int count = 10;
-		
+		//データベースから人数を取得
+		CounterDAO dao = new CounterDAO();
+		int count = dao.Counter();
 		//人数をリクエストスコープに保存
 		request.setAttribute("count", count);
 		
