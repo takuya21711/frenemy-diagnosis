@@ -25,14 +25,14 @@ Eclipse + Tomcat + H2 Database で動かす前提で書いています（Docker 
    git clone <このリポジトリのURL> frenemy-diagnosis
    ```
 2. Eclipse を起動 →  
-   `File` → `Import...` → `Maven` → `Existing Maven Projects` を選択。
-3. Root Directory に clone したフォルダを指定して `Finish`。
+   `ファイル` → `インポート...` → `Maven` → `既存Mavenプロジェクト` を選択。
+3. `ルート・ディレクトリー` に clone したフォルダを指定して `完了`。
    - m2e が `pom.xml` を読んで、依存ライブラリを自動で取得します。
-4. プロジェクトを右クリック → `Maven` → `Update Project...`（`Alt + F5`）を一度実行しておくと確実です。
+4. プロジェクトを右クリック → `Maven` → `プロジェクトの更新...`（`Alt + F5`）を一度実行しておくと確実です。
 5. Tomcat 11 を Eclipse に登録します。
-   - `Window` → `Preferences` → `Server` → `Runtime Environments` → `Add...`
-   - Apache Tomcat v11.0 を選び、インストール済み Tomcat のフォルダを指定。
-6. プロジェクトを右クリック → `Run As` → `Run on Server` → 先ほど登録した Tomcat を選択。
+   - `ウィンドウ` → `設定` → `サーバー` → `ランタイム環境` → `追加...`
+   - `Apache Tomcat v11.0` を選び、インストール済み Tomcat のフォルダを指定。
+6. プロジェクトを右クリック → `実行` → `サーバーで実行` → 先ほど登録した Tomcat を選択。
 7. ブラウザで次の URL を開いて動作確認してください。
    ```
    http://localhost:8080/frenemy-diagnosis/
@@ -41,8 +41,8 @@ Eclipse + Tomcat + H2 Database で動かす前提で書いています（Docker 
 ### うまく動かない時のチェック
 
 - `jakarta.servlet` が解決できない → Tomcat が 10 未満。11 を入れ直す。
-- `java.lang.UnsupportedClassVersionError` → Eclipse の JRE が 21 になっているか確認（`Project` → `Properties` → `Java Build Path` → `Libraries`）。
-- 404 が返る → Context root が `frenemy-diagnosis` になっているか、サーバーの `Modules` を確認。
+- `java.lang.UnsupportedClassVersionError` → Eclipse の JRE が 21 になっているか確認（`プロジェクト` → `プロパティー` → `Javaのビルド・パス` → `ライブラリー`）。
+- 404 が返る → `コンテキストルート` が `frenemy-diagnosis` になっているか、サーバーの `モジュール` を確認。
 
 ---
 
@@ -107,7 +107,7 @@ H2 Console から流し込むのが一番簡単です。
 
 ### 3-4. アプリから繋がらないとき
 
-- `JDBCドライバを読み込めませんでした` → `pom.xml` に `h2` が入っているか、`Maven` → `Update Project` を実行。
+- `JDBCドライバを読み込めませんでした` → `pom.xml` に `h2` が入っているか、`Maven` → `プロジェクトの更新` を実行。
 - `Connection refused` → H2 サーバー側が起動していない / IP が違う / ファイアウォールでブロック。
 - `Database "~/frenemy" not found` → H2 サーバーを `-ifNotExists` 付きで起動していない、またはサーバー側の `~/frenemy.mv.db` がまだ作られていない。先に `db/schema.sql` を流してください。
 
@@ -129,24 +129,24 @@ H2 Console から流し込むのが一番簡単です。
    - パスワード : 空
 3. `db/schema.sql` の中身を貼り付けて `Run`。
 
-**② Eclipse の Run Configuration で環境変数を設定（必要なら）**
+**② Eclipse の実行構成で環境変数を設定（必要なら）**
 
 デフォルトで `jdbc:h2:~/frenemy;AUTO_SERVER=TRUE` を見るので、
 **家で動かすだけなら環境変数は未設定でOK**。
 学校の共用DBに切り替えるときだけ、下の手順で `DB_URL` を上書きします。
 
-1. Eclipse のメニュー `Run` → `Run Configurations...`。
+1. Eclipse のメニュー `実行` → `実行構成...`。
 2. 左ペインから `Apache Tomcat` 以下の対象サーバーを選択。
-3. 右ペインの `Environment` タブを開く → `Add...`。
+3. 右ペインの `環境` タブを開く → `追加...`。
 4. 以下を追加：
 
-   | Name | Value |
-   |------|-------|
+   | 名前 | 値 |
+   |------|------|
    | `DB_URL`  | `jdbc:h2:tcp://10.23.104.249/~/frenemy` （学校で共用DBに繋ぐ日だけ） |
    | `DB_USER` | `sa` （デフォルトでOK、省略可） |
    | `DB_PASS` | （空、省略可） |
 
-5. `Apply` → `Run`。
+5. `適用` → `実行`。
 
 > 家 ⇔ 学校 を切り替えるたびに `DB_URL` を書き換える／チェックボックスで有効無効を切り替える、という運用になります。コード側は触りません。
 
