@@ -10,10 +10,10 @@
 <script src="${pageContext.request.contextPath}/webjars/tailwindcss__browser/4.1.8/dist/index.global.js"></script>
 <script src="${pageContext.request.contextPath}/js/header.js" defer></script>
 </head>
-<body class="min-h-screen bg-[#fffdf0] text-[#2b2b3a]">
+<body class="flex min-h-screen flex-col bg-[#fffdf0] text-[#2b2b3a]">
   <%@ include file="/WEB-INF/jsp/common/header.jsp" %>
 
-  <main class="mx-auto w-full max-w-xl px-4 py-8 sm:py-12">
+  <main class="mx-auto w-full max-w-xl flex-1 px-4 py-8 sm:py-12">
     <!-- 進捗 -->
     <section aria-label="進捗">
       <div class="mb-2 flex justify-between text-sm font-bold text-[#3f51c2]">
@@ -47,6 +47,17 @@
         </button>
       </c:forEach>
     </form>
+
+    <!-- 1問前に戻る（1問目では出さない） -->
+    <c:if test="${number > 1}">
+      <form action="${pageContext.request.contextPath}/quiz" method="post" class="mt-6">
+        <input type="hidden" name="action" value="back">
+        <button type="submit"
+                class="cursor-pointer rounded-full border-2 border-[#3f51c2] bg-white px-6 py-2 text-sm font-bold text-[#3f51c2] hover:bg-[#f9dc33]">&larr; 戻る</button>
+      </form>
+    </c:if>
   </main>
+
+  <%@ include file="/WEB-INF/jsp/common/footer.jsp" %>
 </body>
 </html>

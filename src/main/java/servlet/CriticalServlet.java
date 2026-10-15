@@ -8,11 +8,12 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
+
+import model.Result;
 
 /**
- * クリティカル吉嵜画面（爆発 → 吉嵜を表示）
- * 診断中に吉嵜質問で「とても当てはまる」を選んだ人だけ表示できる
+ * クリティカル吉嵜画面（爆発 → 吉嵜を表示 → 結果画面へ）
+ * 結果は QuizServlet が保存済み。ここでは ?id= の結果を読むだけ
  */
 @WebServlet("/critical")
 public class CriticalServlet extends HttpServlet {
@@ -20,12 +21,13 @@ public class CriticalServlet extends HttpServlet {
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		HttpSession session = request.getSession(false);
-		if (session == null || !Boolean.TRUE.equals(session.getAttribute(QuizServlet.CRITICAL))) {
+		Result result = ResultServlet.findResult(request);
+		//吉嵜の結果でなければ（URLを直接打った等）開始画面へ
+		if (result == null || !result.getRole().isYoshizaki()) {
 			response.sendRedirect(request.getContextPath() + "/StartServlet");
 			return;
 		}
-		// TODO: 結果テーブルに吉嵜(role_id=15)として保存し、役職一覧で吉嵜を解放する
+		request.setAttribute("result", result);
 
 		RequestDispatcher dispatcher =
 				request.getRequestDispatcher("/WEB-INF/jsp/critical.jsp");
