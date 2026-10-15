@@ -11,6 +11,17 @@ import java.util.List;
 import model.Choice;
 import model.Question;
 
+/**
+ * {@code question} / {@code personality} / {@code answer_select} からの参照 DAO。
+ *
+ * <p>出題リストの構成（{@link #findQuiz()}）:
+ * <ul>
+ *   <li>各特性から通常質問をランダムに {@value #QUESTIONS_PER_PERSONALITY} 問ずつ</li>
+ *   <li>特殊質問（{@code FAKE} / {@code FRENEMY}, 非クリティカル）は全部</li>
+ *   <li>吉嵜（{@code critical=TRUE}）質問を 1 問</li>
+ * </ul>
+ * を混ぜてシャッフルして返す。
+ */
 public class QuestionDAO {
 	/** 1つの特性から出す問題数 */
 	private static final int QUESTIONS_PER_PERSONALITY = 5;
