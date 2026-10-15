@@ -26,7 +26,7 @@ public class StartServlet extends HttpServlet {
 					throws ServletException, IOException {
 		//データベースから人数を取得
 		CounterDAO dao = new CounterDAO();
-		int count = dao.Counter();
+		int count = dao.count();
 		//人数をリクエストスコープに保存
 		request.setAttribute("count", count);
 		

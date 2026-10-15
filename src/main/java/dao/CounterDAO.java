@@ -6,7 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class CounterDAO {
-	public int Counter() {
+	public int count() {
 		String sql = "SELECT COUNT(*) FROM result";
 		try (Connection conn = DbConfig.getConnection();
 				PreparedStatement pStmt = conn.prepareStatement(sql);

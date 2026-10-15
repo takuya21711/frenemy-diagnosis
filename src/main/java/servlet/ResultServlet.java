@@ -45,7 +45,7 @@ public class ResultServlet extends HttpServlet {
 
 		request.setAttribute("result", result);
 		request.setAttribute("shareUrl", shareUrl);
-		request.setAttribute("count", new CounterDAO().Counter());
+		request.setAttribute("count", new CounterDAO().count());
 
 		RequestDispatcher dispatcher =
 				request.getRequestDispatcher("/WEB-INF/jsp/result.jsp");
