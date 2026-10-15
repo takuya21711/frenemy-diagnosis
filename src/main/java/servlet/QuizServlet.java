@@ -86,7 +86,7 @@ public class QuizServlet extends HttpServlet {
 		List<Question> quizList = dao.findQuiz();
 		List<Choice> choices = dao.findChoices();
 		if (quizList.isEmpty() || choices.isEmpty()) {
-			forwardError(request, response, "質問を読み込めませんでした。時間をおいてもう一度お試しください。");
+			WebUtils.forwardError(request, response, "質問を読み込めませんでした。時間をおいてもう一度お試しください。");
 			return;
 		}
 
@@ -127,7 +127,7 @@ public class QuizServlet extends HttpServlet {
 			if (current.isCritical() && choiceId == CRITICAL_CHOICE_ID) {
 				int resultId = new ResultDAO().insert(Role.YOSHIZAKI_ID, null, LoginSession.currentUserId(request));
 				if (resultId < 0) {
-					forwardError(request, response, "結果を保存できませんでした。もう一度お試しください。");
+					WebUtils.forwardError(request, response, "結果を保存できませんでした。もう一度お試しください。");
 					return;
 				}
 				quizSession.clear();
@@ -149,7 +149,7 @@ public class QuizServlet extends HttpServlet {
 			if (resultId < 0) {
 				//最後の回答を取り消して、もう一度送れるようにしておく
 				quizSession.removeLastAnswer();
-				forwardError(request, response, "結果を保存できませんでした。もう一度お試しください。");
+				WebUtils.forwardError(request, response, "結果を保存できませんでした。もう一度お試しください。");
 				return;
 			}
 			quizSession.clear();
@@ -195,14 +195,6 @@ public class QuizServlet extends HttpServlet {
 			}
 		}
 		return false;
-	}
-
-	private void forwardError(HttpServletRequest request, HttpServletResponse response, String message)
-			throws ServletException, IOException {
-		request.setAttribute("errorMessage", message);
-		RequestDispatcher dispatcher =
-				request.getRequestDispatcher("/WEB-INF/jsp/error.jsp");
-		dispatcher.forward(request, response);
 	}
 
 }
