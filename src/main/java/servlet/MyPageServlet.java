@@ -8,13 +8,16 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 
 import dao.ResultDAO;
 import model.User;
 
 /**
- * マイページ（ログイン必須）。ユーザー情報と診断履歴を表示
+ * マイページ画面（ログイン必須）。
+ *
+ * <p>未ログインなら {@code /Login} へ 302 リダイレクト。
+ * ログイン中なら診断履歴（新しい順。{@link ResultDAO#findByUser}）を
+ * {@code history} として JSP に渡す。
  */
 @WebServlet("/mypage")
 public class MyPageServlet extends HttpServlet {
@@ -22,8 +25,7 @@ public class MyPageServlet extends HttpServlet {
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		HttpSession session = request.getSession(false);
-		User loginUser = session == null ? null : (User) session.getAttribute(Login.LOGIN_USER);
+		User loginUser = LoginSession.currentUser(request);
 		if (loginUser == null) {
 			response.sendRedirect(request.getContextPath() + "/Login");
 			return;

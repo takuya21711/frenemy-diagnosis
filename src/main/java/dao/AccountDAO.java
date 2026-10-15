@@ -9,11 +9,15 @@ import java.sql.Statement;
 import model.Account;
 
 /**
- * accountテーブル
+ * {@code account} テーブルの CRUD（今は read / insert のみ）。
+ * ログイン判定と新規登録に使う。
  */
 public class AccountDAO {
 
-	/** 名前で探す。見つからない・失敗したら null */
+	/**
+	 * ユーザー名でアカウントを 1 件取得する。
+	 * @return 見つかれば {@link Account}（ハッシュ化されたパスワードを含む）。無い / SQL 失敗なら {@code null}
+	 */
 	public Account findByName(String name) {
 		String sql = "SELECT user_id, name, password FROM account WHERE name = ?";
 		try (Connection conn = DbConfig.getConnection();
@@ -31,8 +35,9 @@ public class AccountDAO {
 	}
 
 	/**
-	 * 登録して user_id を返す。失敗したら（名前の重複も含む）-1
-	 * @param passwordHash PasswordUtil.hash() した値
+	 * 新規アカウントを 1 件登録する。
+	 * @param passwordHash {@link model.PasswordUtil#hash(String)} の返り値（"salt:hash", Base64）
+	 * @return 発番された {@code user_id}。SQL 失敗（{@code name} が UNIQUE 制約違反のケース含む）なら {@code -1}
 	 */
 	public int insert(String name, String passwordHash) {
 		String sql = "INSERT INTO account (name, password) VALUES (?, ?)";

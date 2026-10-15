@@ -13,9 +13,15 @@ import model.LoginLogic;
 import model.User;
 
 /**
- * 新規登録画面
- * GET  : 入力フォーム
- * POST : 登録してそのままログイン → 開始画面へ
+ * 新規登録画面。
+ *
+ * <ul>
+ *   <li>{@code GET} — 入力フォーム（{@code passMin} / {@code nameMax} を文言生成用に渡す）</li>
+ *   <li>{@code POST} — {@link LoginLogic#register(String, String)} を呼び、
+ *       成功したら {@link Login#loginAs(HttpServletRequest, User)} で即ログイン → {@code /StartServlet}。
+ *       {@link IllegalArgumentException} はそのまま {@code errorMessage} として同じフォームへ戻す
+ *       （入力ミス・名前重複など、ユーザーに見せたい文言は LoginLogic 側が持っている）</li>
+ * </ul>
  */
 @WebServlet("/register")
 public class RegisterServlet extends HttpServlet {

@@ -5,7 +5,7 @@
 ```
 src/main/java/
 ├─ HelloWorld.java        動作確認用のサーブレット（本機能ではない）
-├─ servlet/               画面の入口（HttpServlet）
+├─ servlet/               画面の入口（HttpServlet）＋ サーブレット層ヘルパー
 │   ├─ TopServlet         "/"            → /StartServlet へリダイレクト
 │   ├─ StartServlet       "/StartServlet" 診断開始画面（人数カウンター表示）
 │   ├─ QuizServlet        "/quiz"        診断（出題・回答・戻る・結果の保存）
@@ -16,7 +16,11 @@ src/main/java/
 │   ├─ RegisterServlet    "/register"    新規登録
 │   ├─ LogoutServlet      "/logout"      ログアウト（POST）
 │   ├─ MyPageServlet      "/mypage"      マイページ（診断履歴）
-│   └─ YoshizakiUnlock    吉嵜の解放判定（Cookie＋アカウント）
+│   ├─ YoshizakiUnlock    吉嵜の解放判定（Cookie＋アカウント）
+│   ├─ SessionKeys        HttpSession 属性キーの定数置き場
+│   ├─ LoginSession       ログインユーザー取得ヘルパー
+│   ├─ QuizSession        診断中のセッション状態ラッパー
+│   └─ WebUtils           エラー画面へのフォワード共通化
 ├─ dao/                   DBアクセス
 │   ├─ DbConfig           JDBC接続の共通設定（環境変数読み込み）
 │   ├─ QuestionDAO        出題リスト・選択肢

@@ -16,9 +16,18 @@ import dao.ResultDAO;
 import model.Result;
 
 /**
- * 結果画面 /result?id=結果ID
- * 保存は QuizServlet が済ませているので、ここでは読んで表示するだけ（リロードしても二重保存されない）
- * このURLをそのままXで共有する
+ * 結果画面（{@code /result?id=<resultId>}）。
+ *
+ * <p>保存は {@link QuizServlet} が済ませているので、ここでは
+ * {@link ResultDAO#findById} で読んで JSP に流すだけ。
+ * これにより結果 URL は冪等になり、ブラウザのリロードで二重保存されない。
+ *
+ * <p>JSP に渡す属性:
+ * <ul>
+ *   <li>{@code result} — 結果本体</li>
+ *   <li>{@code shareUrl} — X(旧Twitter) の投稿画面 URL</li>
+ *   <li>{@code count} — これまでの診断人数（{@link CounterDAO#count}）</li>
+ * </ul>
  */
 @WebServlet("/result")
 public class ResultServlet extends HttpServlet {
@@ -28,11 +37,8 @@ public class ResultServlet extends HttpServlet {
 			throws ServletException, IOException {
 		Result result = findResult(request);
 		if (result == null) {
-			request.setAttribute("errorMessage", "診断結果が見つかりませんでした。");
-			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-			RequestDispatcher dispatcher =
-					request.getRequestDispatcher("/WEB-INF/jsp/error.jsp");
-			dispatcher.forward(request, response);
+			WebUtils.forwardError(request, response, "診断結果が見つかりませんでした。",
+					HttpServletResponse.SC_NOT_FOUND);
 			return;
 		}
 
@@ -45,7 +51,7 @@ public class ResultServlet extends HttpServlet {
 
 		request.setAttribute("result", result);
 		request.setAttribute("shareUrl", shareUrl);
-		request.setAttribute("count", new CounterDAO().Counter());
+		request.setAttribute("count", new CounterDAO().count());
 
 		RequestDispatcher dispatcher =
 				request.getRequestDispatcher("/WEB-INF/jsp/result.jsp");

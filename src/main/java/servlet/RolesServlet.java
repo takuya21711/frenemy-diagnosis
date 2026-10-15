@@ -12,8 +12,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import dao.RoleDAO;
 
 /**
- * 役職一覧画面
- * 吉嵜は、自分で出すまで「？？？」にしておく（YoshizakiUnlock）
+ * 役職一覧画面。
+ *
+ * <p>JSP に以下を渡す:
+ * <ul>
+ *   <li>{@code roles} — {@link RoleDAO#findAll()}（全役職、閾値 / 画像付き）</li>
+ *   <li>{@code yoshizakiUnlocked} — 吉嵜解放済みかどうか（{@link YoshizakiUnlock#isUnlocked}）</li>
+ * </ul>
+ * 未解放の場合、JSP 側で吉嵜（{@value model.Role#YOSHIZAKI_ID}）は "？？？" で隠す。
  */
 @WebServlet("/roles")
 public class RolesServlet extends HttpServlet {

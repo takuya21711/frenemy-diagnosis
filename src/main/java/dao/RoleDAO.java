@@ -13,13 +13,20 @@ import model.Role;
 import model.Threshold;
 
 /**
- * roleテーブル・role_thresholdテーブル参照
+ * {@code role} / {@code role_threshold} / {@code image} 参照用の DAO。
+ *
+ * <p>役職一覧画面と、通常診断の役職判定（{@link model.RoleJudge}）に渡す。
  */
 public class RoleDAO {
 
 	/**
-	 * 全役職を閾値つきで取得（ID順）
-	 * 失敗したら空のリスト
+	 * 全役職を {@code id} 順で取得する。
+	 *
+	 * <ul>
+	 *   <li>{@link Role#getThresholds()} は {@code role_threshold} の全行（{@code personality_id} 昇順）</li>
+	 *   <li>{@link Role#getImagePath()} はその役職の {@code image} 行のうち {@code MIN(path)} の 1 枚</li>
+	 * </ul>
+	 * SQL 失敗時は空リスト。
 	 */
 	public List<Role> findAll() {
 		Map<Integer, Role> roles = new LinkedHashMap<>();

@@ -3,16 +3,20 @@ package servlet;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 
 import dao.ResultDAO;
 import model.Role;
 import model.User;
 
 /**
- * 役職一覧の「吉嵜」を解放したかどうか
- * ・このブラウザで吉嵜を出した → Cookie に記録
- * ・ログイン中のアカウントで吉嵜を出したことがある → 結果テーブルで判定
+ * 役職一覧画面での「吉嵜」解放判定。
+ *
+ * <p>解放されるのは次のいずれか:
+ * <ul>
+ *   <li>このブラウザで一度でも吉嵜を出した（Cookie {@value #COOKIE_NAME}=1 が残っている。有効期限 1 年）</li>
+ *   <li>ログイン中のアカウントの過去結果に吉嵜（{@value model.Role#YOSHIZAKI_ID}）がある
+ *       （{@link ResultDAO#hasRole}）</li>
+ * </ul>
  */
 final class YoshizakiUnlock {
 	private static final String COOKIE_NAME = "yoshizaki";
@@ -22,7 +26,10 @@ final class YoshizakiUnlock {
 	private YoshizakiUnlock() {
 	}
 
-	/** 吉嵜を出したときに呼ぶ */
+	/**
+	 * 吉嵜を出したときに呼ぶ：Cookie を 1 年間付ける。
+	 * {@code HttpOnly} 付きで JS からは触れない。
+	 */
 	static void unlock(HttpServletRequest request, HttpServletResponse response) {
 		Cookie cookie = new Cookie(COOKIE_NAME, "1");
 		cookie.setMaxAge(MAX_AGE);
@@ -41,8 +48,7 @@ final class YoshizakiUnlock {
 				}
 			}
 		}
-		HttpSession session = request.getSession(false);
-		User loginUser = session == null ? null : (User) session.getAttribute(Login.LOGIN_USER);
+		User loginUser = LoginSession.currentUser(request);
 		return loginUser != null && new ResultDAO().hasRole(loginUser.getUserId(), Role.YOSHIZAKI_ID);
 	}
 }

@@ -15,7 +15,12 @@ import model.Scores;
 import model.TraitScore;
 
 /**
- * resultテーブル（＋表示用に role / image / item / personality を結合）
+ * {@code result} テーブルの読み書き。表示用に {@code role} / {@code image} /
+ * {@code item} / {@code personality} を結合して返す。
+ *
+ * <p>結果画面はこの DAO が返す {@link Result} をそのまま JSP に流し込める形で返す。
+ * スコアがある結果（通常診断）のみ {@link Result#getTraits()} が埋まり、
+ * 吉嵜（クリティカル）結果ではスコア列が NULL なので空リストになる。
  */
 public class ResultDAO {
 	/**

@@ -3,16 +3,21 @@ package model;
 import dao.AccountDAO;
 
 /**
- * ログイン・新規登録の処理
+ * ログイン・新規登録の処理。
+ *
+ * <p>サーブレット層（{@link servlet.Login}, {@link servlet.RegisterServlet}）はこのクラスを呼び、
+ * 返ってきた {@link User} をセッションに入れるだけ。DB 詳細は {@link AccountDAO}、
+ * パスワードの保存形式は {@link PasswordUtil} に閉じる。
  */
 public class LoginLogic {
-	/** 名前の最大文字数（accountテーブルの name 列に合わせる） */
+	/** 名前の最大文字数（{@code account.name} の列長に合わせる） */
 	public static final int NAME_MAX = 50;
 	/** パスワードの最小文字数 */
 	public static final int PASS_MIN = 4;
 
 	/**
-	 * 名前とパスワードが合っていればそのユーザーを返す。合っていなければ null
+	 * ログイン判定。
+	 * @return 名前とパスワードが一致したユーザー。一致しない / 入力が {@code null} なら {@code null}
 	 */
 	public User login(String name, String pass) {
 		if (name == null || pass == null) {

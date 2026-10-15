@@ -5,25 +5,24 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+/**
+ * resultテーブルの行数（＝これまでに診断を受けた人数）を数える DAO
+ * 開始画面と結果画面のカウンター表示に使う
+ */
 public class CounterDAO {
-	public int Counter() {
-		int count = 0;
-		try (Connection conn = DbConfig.getConnection()) {
-
-			//SELECT文を準備
-			String sql = "SELECT COUNT(*) FROM result";
-			PreparedStatement pStmt = conn.prepareStatement(sql);
-
-			//SELECT文を実行し、結果表を取得
-			ResultSet rs = pStmt.executeQuery();
-
+	/** これまでの診断回数。失敗時は -1 */
+	public int count() {
+		String sql = "SELECT COUNT(*) FROM result";
+		try (Connection conn = DbConfig.getConnection();
+				PreparedStatement pStmt = conn.prepareStatement(sql);
+				ResultSet rs = pStmt.executeQuery()) {
 			if (rs.next()) {
-				count = rs.getInt(1);
+				return rs.getInt(1);
 			}
+			return 0;
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return -1;
 		}
-		return count;
 	}
 }

@@ -1,7 +1,10 @@
 package model;
 
 /**
- * accountテーブルの1行（ログイン判定にだけ使う。セッションには User を入れる）
+ * {@code account} テーブルの1行（ログイン判定にだけ使う）。
+ *
+ * <p>セッションにはこのクラスではなく {@link User}（ハッシュを含まない表現）を入れる。
+ * ハッシュ形式は {@link PasswordUtil} の "salt:hash" (Base64) 固定。
  */
 public class Account {
 	private int userId;

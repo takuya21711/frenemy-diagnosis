@@ -12,36 +12,24 @@ import jakarta.servlet.http.HttpServletResponse;
 import dao.CounterDAO;
 
 /**
- * Servlet implementation class StartServlet
+ * 診断開始画面（トップから最初に来る画面）。
+ * これまでに診断を受けた人数（＝resultテーブルの行数）を表示する。
  */
 @WebServlet("/StartServlet")
 public class StartServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
-	/**
-	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
-	 */
-	protected void doGet(HttpServletRequest request,
-			HttpServletResponse response)
-					throws ServletException, IOException {
-		//データベースから人数を取得
-		CounterDAO dao = new CounterDAO();
-		int count = dao.Counter();
-		//人数をリクエストスコープに保存
-		request.setAttribute("count", count);
-		
-		//フォワード
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		request.setAttribute("count", new CounterDAO().count());
+
 		RequestDispatcher dispatcher =
-				request.getRequestDispatcher("WEB-INF/jsp/start.jsp");
+				request.getRequestDispatcher("/WEB-INF/jsp/start.jsp");
 		dispatcher.forward(request, response);
 	}
 
-	/**
-	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
-	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
 		doGet(request, response);
 	}
-
 }

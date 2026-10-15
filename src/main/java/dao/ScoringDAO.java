@@ -12,7 +12,13 @@ import java.util.Map;
 import model.Answer;
 
 /**
- * scoringテーブル・fixed_scoreテーブル参照（スコア計算用）
+ * {@code scoring} / {@code fixed_score} 参照用の DAO（スコア計算の入力を揃える役割）。
+ *
+ * <p>画面から送られてくる {@link Answer} の点数そのものは信用せず、
+ * (question_id, choice_id) で改めて DB を引く設計。
+ * 結果は {@link model.ScoreCalculator#calculate} の引数にそのまま渡せる形。
+ *
+ * <p>SQL の値はすべて {@code PreparedStatement} プレースホルダ経由（IN 句も含む）。
  */
 public class ScoringDAO {
 
