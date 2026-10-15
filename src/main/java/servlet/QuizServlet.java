@@ -45,28 +45,17 @@ public class QuizServlet extends HttpServlet {
 	private static final String ANSWER_LIST = SessionKeys.ANSWER_LIST;
 	private static final String CHOICES = SessionKeys.CHOICES;
 
-	/* 
-	 * SuppressWarningsアノテーションは、コンパイラに警告を抑制するよう指示するために使用される
-	 * Uncheckedはジェネリック型のキャストまたはインスタンス化に関連する警告を抑制します。
-	 * 下のURLに記載ある
-	 * https://qiita.com/kageryosan/items/3634009804b480bf953f
-	 */
-	@SuppressWarnings("unchecked")
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		// sessionの取り出し
-		// getSessionでfalseにしている理由は、セッションがないときにnullを返したいから
-		// スタートボタンを押さずに/quizを叩かれて、不正な診断を受けるのを防止するため
-		HttpSession session = request.getSession(false);
-		List<Question> quizList = session == null ? null
-				: (List<Question>) session.getAttribute(QUIZ_LIST);
-
-		//診断を始めていなければ開始画面へ
-		if (quizList == null) {
+		//スタートボタンを押さずに /quiz を叩かれたら開始画面へ
+		QuizSession quizSession = QuizSession.of(request);
+		if (quizSession == null || !quizSession.isStarted()) {
 			response.sendRedirect(request.getContextPath() + "/StartServlet");
 			return;
 		}
-		int index = (Integer) session.getAttribute(QUIZ_INDEX);
+
+		List<Question> quizList = quizSession.getQuizList();
+		int index = quizSession.getIndex();
 
 		//今の問題と進捗をリクエストスコープに保存（選択肢はセッションにある）
 		request.setAttribute("question", quizList.get(index));
