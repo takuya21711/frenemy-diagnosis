@@ -24,11 +24,26 @@ import model.ScoreCalculator;
 import model.Scores;
 
 /**
- * 診断画面
- * GET  : 今の問題を表示
- * POST : action=start  診断開始（出題リストを作ってセッションに保存）
- *        action=answer 回答を受け取って次の問題へ（最後の問題なら結果を保存して結果画面へ）
- *        action=back   1問前に戻る
+ * 診断の中核サーブレット。
+ *
+ * <ul>
+ *   <li>{@code GET /quiz} — 今の問題を表示（出題中でなければ開始画面に戻す）</li>
+ *   <li>{@code POST /quiz} — {@code action} パラメータで分岐
+ *     <ul>
+ *       <li>{@code start}  — 診断開始（出題リスト生成 → セッション保存）</li>
+ *       <li>{@code answer} — 回答を受け取って次の問題へ。最終問なら結果を保存して結果画面へ。
+ *           吉嵜質問で「とても当てはまる」が選ばれた瞬間に即終了（クリティカル経路）</li>
+ *       <li>{@code back}   — 1 問戻る（直前の回答を取り消す）</li>
+ *     </ul>
+ *   </li>
+ * </ul>
+ *
+ * <p>診断中のセッション状態 ({@code quizList} / {@code quizIndex} / {@code answerList} / {@code choices}) は
+ * {@link QuizSession} に閉じている。連打対策で {@code answer} / {@code back} は
+ * {@code synchronized(quizSession.raw())} で直列化する。
+ *
+ * <p>画面からの POST では {@code questionId} と {@code choiceId} だけを信頼し、
+ * 点数は {@link dao.ScoringDAO} 経由で DB から引き直す（画面値のタンパリング耐性）。
  */
 @WebServlet("/quiz")
 public class QuizServlet extends HttpServlet {
