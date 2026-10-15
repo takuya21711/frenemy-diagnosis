@@ -104,25 +104,15 @@ public class QuizServlet extends HttpServlet {
 	}
 
 	/** 回答：画面から来るのは questionId と choiceId だけ（点数は受け取らない） */
-	@SuppressWarnings("unchecked")
 	private void answer(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		HttpSession session = request.getSession(false);
-		if (session == null) {
+		QuizSession quizSession = QuizSession.of(request);
+		if (quizSession == null || !quizSession.isStarted()) {
 			response.sendRedirect(request.getContextPath() + "/StartServlet");
 			return;
 		}
 		//ボタンの連打で同じ回答が2回処理されないように、セッションごとに順番に処理する
-		synchronized (session) {
-			List<Question> quizList = (List<Question>) session.getAttribute(QUIZ_LIST);
-			if (quizList == null) {
-				response.sendRedirect(request.getContextPath() + "/StartServlet");
-				return;
-			}
-			List<Answer> answerList = (List<Answer>) session.getAttribute(ANSWER_LIST);
-			List<Choice> choices = (List<Choice>) session.getAttribute(CHOICES);
-			int index = (Integer) session.getAttribute(QUIZ_INDEX);
-
+		synchronized (quizSession.raw()) {
 			int questionId;
 			int choiceId;
 			try {
@@ -134,8 +124,8 @@ public class QuizServlet extends HttpServlet {
 			}
 
 			//「今の問題」と違う（戻るボタン・二重送信など）か、ありえない選択肢なら無視して今の問題を表示
-			Question current = quizList.get(index);
-			if (current.getQuestionId() != questionId || !isValidChoice(choices, choiceId)) {
+			Question current = quizSession.currentQuestion();
+			if (current.getQuestionId() != questionId || !isValidChoice(quizSession.getChoices(), choiceId)) {
 				response.sendRedirect(request.getContextPath() + "/quiz");
 				return;
 			}
@@ -147,30 +137,29 @@ public class QuizServlet extends HttpServlet {
 					forwardError(request, response, "結果を保存できませんでした。もう一度お試しください。");
 					return;
 				}
-				clearQuiz(session);
+				quizSession.clear();
 				YoshizakiUnlock.unlock(request, response);
 				response.sendRedirect(request.getContextPath() + "/critical?id=" + resultId);
 				return;
 			}
 
-			answerList.add(new Answer(questionId, choiceId));
-			index++;
+			quizSession.addAnswer(new Answer(questionId, choiceId));
 
-			if (index < quizList.size()) {
-				session.setAttribute(QUIZ_INDEX, index);
+			if (quizSession.getIndex() < quizSession.getQuizList().size()) {
 				response.sendRedirect(request.getContextPath() + "/quiz");
 				return;
 			}
 
 			//全問回答した：スコア計算 → 役職判定 → 保存 → 結果画面
-			int resultId = saveResult(quizList, answerList, LoginSession.currentUserId(request));
+			int resultId = saveResult(
+					quizSession.getQuizList(), quizSession.getAnswerList(), LoginSession.currentUserId(request));
 			if (resultId < 0) {
 				//最後の回答を取り消して、もう一度送れるようにしておく
-				answerList.remove(answerList.size() - 1);
+				quizSession.removeLastAnswer();
 				forwardError(request, response, "結果を保存できませんでした。もう一度お試しください。");
 				return;
 			}
-			clearQuiz(session);
+			quizSession.clear();
 			//結果画面はIDで表示するので、リロードしても二重に保存されない
 			response.sendRedirect(request.getContextPath() + "/result?id=" + resultId);
 		}
