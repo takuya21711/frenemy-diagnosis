@@ -2,8 +2,18 @@ package model;
 import java.io.Serializable;
 
 /**
- * 5特性の正規化スコア（-30〜+30）
- * 特性IDは personality テーブルと同じ（1=外向性 2=協調性 3=誠実性 4=情緒安定性 5=開放性）
+ * 5特性の正規化スコア（{@value model.ScoreCalculator#NORM_MIN} 〜 {@value model.ScoreCalculator#NORM_MAX}）。
+ *
+ * <p>特性IDは {@code personality} テーブルと同じで、1〜{@value #SIZE}:
+ * <ol>
+ *   <li>外向性 (extraversion)</li>
+ *   <li>協調性 (agreeableness)</li>
+ *   <li>誠実性 (conscientiousness)</li>
+ *   <li>情緒安定性 (emotional stability)</li>
+ *   <li>開放性 (openness)</li>
+ * </ol>
+ *
+ * <p>内部配列は添字 0 を使わず、特性IDをそのまま添字にする。
  */
 public class Scores implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -16,9 +26,12 @@ public class Scores implements Serializable {
 
 	public Scores() {}
 
+	/** @param personalityId 1〜{@value #SIZE} */
 	public int get(int personalityId) {
 		return values[personalityId];
 	}
+
+	/** @param personalityId 1〜{@value #SIZE} */
 	public void set(int personalityId, int score) {
 		values[personalityId] = score;
 	}
