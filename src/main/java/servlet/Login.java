@@ -14,9 +14,14 @@ import model.LoginLogic;
 import model.User;
 
 /**
- * ログイン画面
- * GET  : 入力フォーム
- * POST : 名前とパスワードを確認。成功したら開始画面へ、失敗したらフォームにエラー表示
+ * ログイン画面。
+ *
+ * <ul>
+ *   <li>{@code GET} — 入力フォーム（{@code login.jsp}）</li>
+ *   <li>{@code POST} — {@link LoginLogic#login(String, String)} で判定。
+ *       成功したら {@link #loginAs(HttpServletRequest, User)} で状態を切り替え、
+ *       {@code /StartServlet} へ 302。失敗したら {@code errorMessage} 付きで同じフォームに戻す。</li>
+ * </ul>
  */
 @WebServlet("/Login")
 public class Login extends HttpServlet {
@@ -47,7 +52,12 @@ public class Login extends HttpServlet {
 		response.sendRedirect(request.getContextPath() + "/StartServlet");
 	}
 
-	/** ログイン状態にする（新規登録のあとにも使う） */
+	/**
+	 * セッションをログイン状態に遷移させる（新規登録成功後も呼ぶ）。
+	 *
+	 * <p>セッション固定攻撃を避けるため、{@link HttpServletRequest#changeSessionId()}
+	 * でセッションIDを付け替えてから {@code loginUser} を書き込む。
+	 */
 	static void loginAs(HttpServletRequest request, User user) {
 		HttpSession session = request.getSession();
 		//セッション固定攻撃の対策：ログインしたらセッションIDを変える
