@@ -22,9 +22,6 @@ import model.User;
 public class Login extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
-	/** セッションのキー（ログイン中のユーザー） */
-	static final String LOGIN_USER = "loginUser";
-
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/jsp/login.jsp");
@@ -55,6 +52,6 @@ public class Login extends HttpServlet {
 		HttpSession session = request.getSession();
 		//セッション固定攻撃の対策：ログインしたらセッションIDを変える
 		request.changeSessionId();
-		session.setAttribute(LOGIN_USER, user);
+		session.setAttribute(SessionKeys.LOGIN_USER, user);
 	}
 }
