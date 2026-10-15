@@ -9,8 +9,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
- * トップページ（http://localhost:8080/frenemy-diagnosis/）
- * トップ＝診断開始画面なので、開始画面へリダイレクトする
+ * ルート {@code /}（例: {@code http://localhost:8080/frenemy-diagnosis/}）のサーブレット。
+ *
+ * <p>この診断アプリの「トップ」はそのまま診断開始画面なので、ここでは何も表示せず
+ * {@link StartServlet} へ 302 リダイレクトする。
  */
 @WebServlet("")
 public class TopServlet extends HttpServlet {
