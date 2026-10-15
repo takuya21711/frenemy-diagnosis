@@ -3,7 +3,6 @@ package servlet;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 
 import dao.ResultDAO;
 import model.Role;
@@ -41,8 +40,7 @@ final class YoshizakiUnlock {
 				}
 			}
 		}
-		HttpSession session = request.getSession(false);
-		User loginUser = session == null ? null : (User) session.getAttribute(Login.LOGIN_USER);
+		User loginUser = LoginSession.currentUser(request);
 		return loginUser != null && new ResultDAO().hasRole(loginUser.getUserId(), Role.YOSHIZAKI_ID);
 	}
 }
