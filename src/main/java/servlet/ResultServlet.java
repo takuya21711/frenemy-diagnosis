@@ -28,11 +28,8 @@ public class ResultServlet extends HttpServlet {
 			throws ServletException, IOException {
 		Result result = findResult(request);
 		if (result == null) {
-			request.setAttribute("errorMessage", "診断結果が見つかりませんでした。");
-			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-			RequestDispatcher dispatcher =
-					request.getRequestDispatcher("/WEB-INF/jsp/error.jsp");
-			dispatcher.forward(request, response);
+			WebUtils.forwardError(request, response, "診断結果が見つかりませんでした。",
+					HttpServletResponse.SC_NOT_FOUND);
 			return;
 		}
 
