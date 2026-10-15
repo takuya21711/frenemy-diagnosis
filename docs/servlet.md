@@ -83,7 +83,7 @@ POST のあとは必ずリダイレクトする（PRGパターン）ので、リ
 | メソッド | 概要 |
 |----------|------|
 | `unlock(request, response)` | Cookie `yoshizaki=1`（1年・HttpOnly）を付ける。吉嵜が出たときに `QuizServlet` が呼ぶ |
-| `isUnlocked(request)` | Cookie がある、またはログイン中のアカウントで吉嵜を出したことがある（`ResultDAO.hasRole`）なら true |
+| `isUnlocked(request)` | Cookie がある、またはログイン中のアカウント（`LoginSession.currentUser`）で吉嵜を出したことがある（`ResultDAO.hasRole`）なら true |
 
 ---
 
@@ -97,7 +97,7 @@ POST のあとは必ずリダイレクトする（PRGパターン）ので、リ
 | `doPost` | `LoginLogic.login()` で確認。失敗したらエラーを出して `login.jsp` へ、成功したら `loginAs()` して `/StartServlet` へリダイレクト |
 | `loginAs(request, user)` | セッションIDを変えて（`changeSessionId()`、セッション固定攻撃の対策）`loginUser` に入れる |
 
-定数 `LOGIN_USER = "loginUser"` がセッションのキー。
+セッションキー `loginUser` は `SessionKeys.LOGIN_USER` に集約済み。
 
 ---
 
@@ -118,7 +118,7 @@ GET でフォーム、POST で `LoginLogic.register()`。成功したらその�
 ## `MyPageServlet.java`
 
 **URL** : `/mypage`
-未ログインなら `/Login` へ。ログイン中なら `ResultDAO.findByUser` の診断履歴を `mypage.jsp` に渡す。
+未ログインなら `/Login` へ（判定は `LoginSession.currentUser`）。ログイン中なら `ResultDAO.findByUser` の診断履歴を `mypage.jsp` に渡す。
 
 ---
 
