@@ -4,7 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 役職（roleテーブルの1行 ＋ 閾値）
+ * 役職（{@code role} テーブルの1行 ＋ {@code role_threshold} の閾値一覧 ＋ 一覧用の画像パス）。
+ *
+ * <p>通常の診断では {@link RoleJudge} が閾値をもとに判定するが、
+ * クリティカル吉嵜（{@link #YOSHIZAKI_ID}）だけは閾値を持たず、
+ * {@link servlet.QuizServlet} のクリティカル経路から直接結果に書かれる。
  */
 public class Role implements Serializable {
 	private static final long serialVersionUID = 1L;
