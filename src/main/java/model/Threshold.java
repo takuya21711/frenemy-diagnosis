@@ -2,8 +2,11 @@ package model;
 import java.io.Serializable;
 
 /**
- * 役職の閾値（role_thresholdテーブルの1行）
- * 正規化スコアが min〜max に入っていれば一致
+ * 役職の閾値（{@code role_threshold} テーブルの1行）。
+ *
+ * <p>ある特性の正規化スコアが {@link #getMin()} 〜 {@link #getMax()} の範囲
+ * （両端含む）に入っていれば「一致」とみなす。
+ * 一致数が最大の役職を選ぶのは {@link RoleJudge}。
  */
 public class Threshold implements Serializable {
 	private static final long serialVersionUID = 1L;
