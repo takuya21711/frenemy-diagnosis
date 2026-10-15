@@ -46,9 +46,18 @@ public class QuizServlet extends HttpServlet {
 	static final String ANSWER_LIST = "answerList";
 	static final String CHOICES = "choices";
 
+	/* 
+	 * SuppressWarningsアノテーションは、コンパイラに警告を抑制するよう指示するために使用される
+	 * Uncheckedはジェネリック型のキャストまたはインスタンス化に関連する警告を抑制します。
+	 * 下のURLに記載ある
+	 * https://qiita.com/kageryosan/items/3634009804b480bf953f
+	 */
 	@SuppressWarnings("unchecked")
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
+		// sessionの取り出し
+		// getSessionでfalseにしている理由は、セッションがないときにnullを返したいから
+		// スタートボタンを押さずに/quizを叩かれて、不正な診断を受けるのを防止するため
 		HttpSession session = request.getSession(false);
 		List<Question> quizList = session == null ? null
 				: (List<Question>) session.getAttribute(QUIZ_LIST);
