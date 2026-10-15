@@ -10,7 +10,6 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 
 import dao.QuestionDAO;
 import dao.ResultDAO;
@@ -37,12 +36,6 @@ public class QuizServlet extends HttpServlet {
 
 	/** 「とても当てはまる」の choice_id（吉嵜質問でこれを選ぶとクリティカル） */
 	private static final int CRITICAL_CHOICE_ID = 1;
-
-	//セッションのキー（{@link SessionKeys} の別名。QuizServlet 内で使い回す）
-	private static final String QUIZ_LIST = SessionKeys.QUIZ_LIST;
-	private static final String QUIZ_INDEX = SessionKeys.QUIZ_INDEX;
-	private static final String ANSWER_LIST = SessionKeys.ANSWER_LIST;
-	private static final String CHOICES = SessionKeys.CHOICES;
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
@@ -212,11 +205,4 @@ public class QuizServlet extends HttpServlet {
 		dispatcher.forward(request, response);
 	}
 
-	/** セッションから診断中のデータを消す */
-	static void clearQuiz(HttpSession session) {
-		session.removeAttribute(QUIZ_LIST);
-		session.removeAttribute(QUIZ_INDEX);
-		session.removeAttribute(ANSWER_LIST);
-		session.removeAttribute(CHOICES);
-	}
 }
