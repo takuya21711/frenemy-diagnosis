@@ -10,8 +10,13 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
 /**
- * パスワードのハッシュ化（PBKDF2WithHmacSHA256）
- * DBには "salt:hash"（どちらもBase64）の形で保存する
+ * パスワードのハッシュ化・検証ユーティリティ。
+ *
+ * <p>アルゴリズム: PBKDF2WithHmacSHA256 / {@value #ITERATIONS} iterations /
+ * key length {@value #KEY_LENGTH} bits / salt {@value #SALT_LENGTH} bytes。
+ *
+ * <p>DB 保存形式は {@code "<Base64 salt>:<Base64 hash>"} の 1 列。
+ * 検証は {@link java.security.MessageDigest#isEqual} でタイミング攻撃を回避する。
  */
 public final class PasswordUtil {
 	private static final String ALGORITHM = "PBKDF2WithHmacSHA256";
@@ -22,6 +27,10 @@ public final class PasswordUtil {
 	private PasswordUtil() {
 	}
 
+	/**
+	 * 平文パスワードを DB 保存用のハッシュ文字列（{@code "salt:hash"}, Base64）に変換する。
+	 * ソルトは毎回ランダム生成される。
+	 */
 	public static String hash(String password) {
 		byte[] salt = new byte[SALT_LENGTH];
 		new SecureRandom().nextBytes(salt);
@@ -29,6 +38,10 @@ public final class PasswordUtil {
 		return enc.encodeToString(salt) + ":" + enc.encodeToString(pbkdf2(password, salt));
 	}
 
+	/**
+	 * 平文パスワードが {@code stored}（{@link #hash(String)} の返り値）と一致するか判定する。
+	 * フォーマット不正・{@code null} はすべて不一致扱い（例外にしない）。
+	 */
 	public static boolean verify(String password, String stored) {
 		if (stored == null) {
 			return false;
