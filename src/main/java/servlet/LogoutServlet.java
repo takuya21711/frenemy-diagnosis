@@ -10,7 +10,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 /**
- * ログアウト（POSTのみ）。セッションを破棄して開始画面へ
+ * ログアウト処理（POST のみ）。
+ *
+ * <p>GET を受けないのは CSRF 的な意味（画像タグなどからの意図しないログアウトを避ける）。
+ * {@link HttpSession#invalidate()} で診断中データ・{@code loginUser} をまとめて破棄してから、
+ * 開始画面に 302 リダイレクト。
  */
 @WebServlet("/logout")
 public class LogoutServlet extends HttpServlet {
