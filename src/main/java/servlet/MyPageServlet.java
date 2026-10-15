@@ -13,7 +13,11 @@ import dao.ResultDAO;
 import model.User;
 
 /**
- * マイページ（ログイン必須）。ユーザー情報と診断履歴を表示
+ * マイページ画面（ログイン必須）。
+ *
+ * <p>未ログインなら {@code /Login} へ 302 リダイレクト。
+ * ログイン中なら診断履歴（新しい順。{@link ResultDAO#findByUser}）を
+ * {@code history} として JSP に渡す。
  */
 @WebServlet("/mypage")
 public class MyPageServlet extends HttpServlet {
