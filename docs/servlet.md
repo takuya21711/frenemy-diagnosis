@@ -128,3 +128,51 @@ GET でフォーム、POST で `LoginLogic.register()`。成功したらその�
 ## `HelloWorld.java`
 
 Eclipse の WTP が生成した動作確認用サーブレット。本機能ではない。
+
+---
+
+## ヘルパー類（サーブレット層の共通処理）
+
+サーブレット間で重複していた処理を 1 箇所に閉じるために導入した小さなクラス群。
+
+### `SessionKeys.java`
+
+`HttpSession` 属性のキー名（`loginUser` / `quizList` / `quizIndex` / `answerList` / `choices`）を集めた定数置き場。
+文字列を直接書くとタイポに気付けないので、必ずここ経由で参照する。
+
+### `LoginSession.java`
+
+| メソッド | 概要 |
+|----------|------|
+| `currentUser(request)` | ログイン中のユーザー。未ログイン（セッション無し含む）なら `null` |
+| `currentUserId(request)` | 同上の `userId` だけ。DAO に `Integer userId` を渡す用 |
+
+従来 `(User) session.getAttribute(Login.LOGIN_USER)` を書いていた 3 箇所をこのヘルパーに置き換えてある。
+
+### `QuizSession.java`
+
+診断中のセッション状態をラップする薄いクラス。`QuizServlet` から
+`(List<Question>) session.getAttribute(...)` のキャストと `@SuppressWarnings("unchecked")` を追い出すのが目的。
+
+| メソッド | 概要 |
+|----------|------|
+| `QuizSession.of(request)` | 既存セッションが無ければ `null` |
+| `QuizSession.create(request)` | 新規または既存セッションを取得（`start` 用） |
+| `raw()` | 元の `HttpSession`（連打対策の `synchronized` 用モニタ） |
+| `isStarted()` | 診断中かどうか（`quizList` が乗っているか） |
+| `getQuizList()` / `getAnswerList()` / `getChoices()` / `getIndex()` | 現在の状態の読み出し |
+| `currentQuestion()` | 今の問題（インデックスで引く） |
+| `start(quizList, choices)` | 出題リストと選択肢をセット、インデックス 0、回答空リスト |
+| `addAnswer(answer)` | 回答追加 ＋ インデックス前進 |
+| `undoLastAnswer()` | 直前の回答を取り消し、インデックスを 1 戻す（戻るボタン用） |
+| `removeLastAnswer()` | インデックスは動かさず直前の回答だけ取り消す（結果保存失敗時のリトライ用） |
+| `clear()` | 診断中の属性を全部削除 |
+
+### `WebUtils.java`
+
+エラー画面へのフォワードをまとめたユーティリティ。
+
+| メソッド | 概要 |
+|----------|------|
+| `forwardError(request, response, message)` | `errorMessage` をリクエストスコープに入れて `/WEB-INF/jsp/error.jsp` にフォワード |
+| `forwardError(request, response, message, status)` | HTTP ステータス指定版（404 など） |
