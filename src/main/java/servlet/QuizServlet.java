@@ -24,7 +24,6 @@ import model.Role;
 import model.RoleJudge;
 import model.ScoreCalculator;
 import model.Scores;
-import model.User;
 
 /**
  * 診断画面
@@ -40,11 +39,11 @@ public class QuizServlet extends HttpServlet {
 	/** 「とても当てはまる」の choice_id（吉嵜質問でこれを選ぶとクリティカル） */
 	private static final int CRITICAL_CHOICE_ID = 1;
 
-	//セッションのキー
-	static final String QUIZ_LIST = "quizList";
-	static final String QUIZ_INDEX = "quizIndex";
-	static final String ANSWER_LIST = "answerList";
-	static final String CHOICES = "choices";
+	//セッションのキー（{@link SessionKeys} の別名。QuizServlet 内で使い回す）
+	private static final String QUIZ_LIST = SessionKeys.QUIZ_LIST;
+	private static final String QUIZ_INDEX = SessionKeys.QUIZ_INDEX;
+	private static final String ANSWER_LIST = SessionKeys.ANSWER_LIST;
+	private static final String CHOICES = SessionKeys.CHOICES;
 
 	/* 
 	 * SuppressWarningsアノテーションは、コンパイラに警告を抑制するよう指示するために使用される
@@ -158,7 +157,7 @@ public class QuizServlet extends HttpServlet {
 
 			//クリティカル吉嵜：その場で診断終了（スコアなしで吉嵜として保存）
 			if (current.isCritical() && choiceId == CRITICAL_CHOICE_ID) {
-				int resultId = new ResultDAO().insert(Role.YOSHIZAKI_ID, null, loginUserId(session));
+				int resultId = new ResultDAO().insert(Role.YOSHIZAKI_ID, null, LoginSession.currentUserId(request));
 				if (resultId < 0) {
 					forwardError(request, response, "結果を保存できませんでした。もう一度お試しください。");
 					return;
@@ -179,7 +178,7 @@ public class QuizServlet extends HttpServlet {
 			}
 
 			//全問回答した：スコア計算 → 役職判定 → 保存 → 結果画面
-			int resultId = saveResult(quizList, answerList, loginUserId(session));
+			int resultId = saveResult(quizList, answerList, LoginSession.currentUserId(request));
 			if (resultId < 0) {
 				//最後の回答を取り消して、もう一度送れるようにしておく
 				answerList.remove(answerList.size() - 1);
@@ -226,11 +225,6 @@ public class QuizServlet extends HttpServlet {
 			return -1;
 		}
 		return new ResultDAO().insert(role.getId(), scores, userId);
-	}
-
-	private Integer loginUserId(HttpSession session) {
-		User loginUser = (User) session.getAttribute(Login.LOGIN_USER);
-		return loginUser == null ? null : loginUser.getUserId();
 	}
 
 	private boolean isValidChoice(List<Choice> choices, int choiceId) {
