@@ -177,18 +177,12 @@ public class QuizServlet extends HttpServlet {
 	}
 
 	/** 1問前に戻る（直前の回答を取り消す） */
-	@SuppressWarnings("unchecked")
 	private void back(HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
-		HttpSession session = request.getSession(false);
-		if (session != null) {
-			synchronized (session) {
-				List<Answer> answerList = (List<Answer>) session.getAttribute(ANSWER_LIST);
-				Integer index = (Integer) session.getAttribute(QUIZ_INDEX);
-				if (answerList != null && index != null && index > 0 && !answerList.isEmpty()) {
-					answerList.remove(answerList.size() - 1);
-					session.setAttribute(QUIZ_INDEX, index - 1);
-				}
+		QuizSession quizSession = QuizSession.of(request);
+		if (quizSession != null) {
+			synchronized (quizSession.raw()) {
+				quizSession.undoLastAnswer();
 			}
 		}
 		response.sendRedirect(request.getContextPath() + "/quiz");
