@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -44,15 +45,15 @@
       <p class="text-lg font-black tracking-widest text-[#e0301e]">CRITICAL!!</p>
       <p class="mt-1 text-sm font-bold text-[#9583db]">クリティカル吉嵜 発動</p>
 
-      <%-- TODO: 吉嵜の画像ができたら差し替える --%>
-      <div class="mx-auto mt-6 flex h-40 w-40 items-center justify-center rounded-full border-[3px] border-[#3f51c2] bg-[#f9dc33] text-4xl font-black text-[#3f51c2]">
-        吉嵜
-      </div>
+      <img src="${pageContext.request.contextPath}/<c:out value="${result.imagePath}" />" alt=""
+           class="mx-auto mt-6 h-40 w-40 rounded-full border-[3px] border-[#3f51c2] bg-[#f9dc33] object-cover">
 
-      <h1 class="mt-6 text-2xl font-black sm:text-3xl">あなたの役職は<br><span class="text-[#e0301e]">「吉嵜」</span>です</h1>
+      <h1 class="mt-6 text-2xl font-black sm:text-3xl">あなたの役職は<br><span class="text-[#e0301e]">「<c:out value="${result.role.name}" />」</span>です</h1>
       <p class="mt-3 text-sm text-gray-500">診断はここで終了しました。</p>
 
       <div class="mt-8 flex flex-col gap-3">
+        <a href="${pageContext.request.contextPath}/result?id=${result.resultId}"
+           class="block w-full rounded-xl bg-[#e0301e] py-3 font-bold text-white hover:opacity-85">結果を見る</a>
         <form action="${pageContext.request.contextPath}/quiz" method="post">
           <input type="hidden" name="action" value="start">
           <button type="submit"

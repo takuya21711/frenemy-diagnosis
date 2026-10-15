@@ -14,43 +14,47 @@ import model.LoginLogic;
 import model.User;
 
 /**
- * Servlet implementation class Login
+ * ログイン画面
+ * GET  : 入力フォーム
+ * POST : 名前とパスワードを確認。成功したら開始画面へ、失敗したらフォームにエラー表示
  */
 @WebServlet("/Login")
 public class Login extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-     
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/jsp/login.jsp");
-        dispatcher.forward(request, response);
-    }
-	
-	/**
-	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
-	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+	/** セッションのキー（ログイン中のユーザー） */
+	static final String LOGIN_USER = "loginUser";
+
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/jsp/login.jsp");
+		dispatcher.forward(request, response);
+	}
+
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
 		//リクエストパラメーターの取得
 		request.setCharacterEncoding("UTF-8");
 		String name = request.getParameter("name");
 		String pass = request.getParameter("pass");
-		//Userインスタンスの生成
-		User user = new User(name, pass);
+
 		//ログイン処理
-		LoginLogic loginLogic = new LoginLogic();
-		boolean isLogin = loginLogic.execute(user);
-		
-		//ログイン成功時の処理
-		if(isLogin) {
-			//ユーザー情報をセッションスコープに保存
-			HttpSession session = request.getSession();
-			session.setAttribute("loginUser", user);
+		User user = new LoginLogic().login(name, pass);
+		if (user == null) {
+			request.setAttribute("errorMessage", "ユーザー名またはパスワードが違います。");
+			request.setAttribute("name", name);
+			doGet(request, response);
+			return;
 		}
-		//ログイン結果画面にフォワード
-		RequestDispatcher dispatcher = request.getRequestDispatcher
-			("WEB-INF/jsp/loginResult.jsp");
-		dispatcher.forward(request, response);
-		
+		loginAs(request, user);
+		response.sendRedirect(request.getContextPath() + "/StartServlet");
 	}
 
+	/** ログイン状態にする（新規登録のあとにも使う） */
+	static void loginAs(HttpServletRequest request, User user) {
+		HttpSession session = request.getSession();
+		//セッション固定攻撃の対策：ログインしたらセッションIDを変える
+		request.changeSessionId();
+		session.setAttribute(LOGIN_USER, user);
+	}
 }

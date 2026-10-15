@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- 仮の画像。差し替えるときはこのファイルを置き換えるか、DBの image.path を変える -->
+  <rect width="200" height="200" fill="#fffdf0"/>
+  <text x="100" y="100" font-family="sans-serif" font-size="56" font-weight="bold" fill="#3f51c2" text-anchor="middle" dominant-baseline="central">ニート</text>
+</svg>

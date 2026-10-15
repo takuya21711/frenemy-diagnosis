@@ -1,7 +1,8 @@
 package servlet;
 
 import java.io.IOException;
-import java.util.List;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
@@ -9,32 +10,59 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 
-import model.Answer;
+import dao.CounterDAO;
+import dao.ResultDAO;
+import model.Result;
 
 /**
- * 結果画面（仮）
- * TODO: スコア計算 → 役職判定 → 結果テーブルに保存 → result?id=結果ID にリダイレクト
+ * 結果画面 /result?id=結果ID
+ * 保存は QuizServlet が済ませているので、ここでは読んで表示するだけ（リロードしても二重保存されない）
+ * このURLをそのままXで共有する
  */
 @WebServlet("/result")
 public class ResultServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
-	@SuppressWarnings("unchecked")
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		HttpSession session = request.getSession(false);
-		List<Answer> answerList = session == null ? null
-				: (List<Answer>) session.getAttribute(QuizServlet.ANSWER_LIST);
-		if (answerList == null) {
-			response.sendRedirect(request.getContextPath() + "/StartServlet");
+		Result result = findResult(request);
+		if (result == null) {
+			request.setAttribute("errorMessage", "診断結果が見つかりませんでした。");
+			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			RequestDispatcher dispatcher =
+					request.getRequestDispatcher("/WEB-INF/jsp/error.jsp");
+			dispatcher.forward(request, response);
 			return;
 		}
-		request.setAttribute("answerCount", answerList.size());
+
+		//X(旧Twitter)の共有リンク
+		String resultUrl = request.getRequestURL() + "?id=" + result.getResultId();
+		String roleName = result.getRole().getName();
+		String text = (result.getRole().isBlack() ? "お前は「" + roleName + "」だ！" : "私の役職は「" + roleName + "」でした！")
+				+ " #フレネミー診断";
+		String shareUrl = "https://x.com/intent/post?text=" + encode(text) + "&url=" + encode(resultUrl);
+
+		request.setAttribute("result", result);
+		request.setAttribute("shareUrl", shareUrl);
+		request.setAttribute("count", new CounterDAO().Counter());
 
 		RequestDispatcher dispatcher =
 				request.getRequestDispatcher("/WEB-INF/jsp/result.jsp");
 		dispatcher.forward(request, response);
+	}
+
+	/** ?id= の結果を読む。id が不正・見つからなければ null */
+	static Result findResult(HttpServletRequest request) {
+		try {
+			int id = Integer.parseInt(request.getParameter("id"));
+			return new ResultDAO().findById(id);
+		} catch (NumberFormatException e) {
+			return null;
+		}
+	}
+
+	private static String encode(String s) {
+		return URLEncoder.encode(s, StandardCharsets.UTF_8);
 	}
 }
