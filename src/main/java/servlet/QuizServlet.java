@@ -1,7 +1,6 @@
 package servlet;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -87,8 +86,8 @@ public class QuizServlet extends HttpServlet {
 	/** 診断開始：前回の回答を消して、出題リストを作る */
 	private void start(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		HttpSession session = request.getSession();
-		clearQuiz(session);
+		QuizSession quizSession = QuizSession.create(request);
+		quizSession.clear();
 
 		QuestionDAO dao = new QuestionDAO();
 		List<Question> quizList = dao.findQuiz();
@@ -98,10 +97,7 @@ public class QuizServlet extends HttpServlet {
 			return;
 		}
 
-		session.setAttribute(QUIZ_LIST, quizList);
-		session.setAttribute(QUIZ_INDEX, 0);
-		session.setAttribute(ANSWER_LIST, new ArrayList<Answer>());
-		session.setAttribute(CHOICES, choices);
+		quizSession.start(quizList, choices);
 
 		//リロードで再開始されないようにリダイレクト
 		response.sendRedirect(request.getContextPath() + "/quiz");
