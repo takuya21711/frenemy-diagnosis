@@ -32,7 +32,7 @@ public class StartServlet extends HttpServlet {
 		
 		//フォワード
 		RequestDispatcher dispatcher =
-				request.getRequestDispatcher("WEB-INF/jsp/start.jsp");
+				request.getRequestDispatcher("/WEB-INF/jsp/start.jsp");
 		dispatcher.forward(request, response);
 	}
 
