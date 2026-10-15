@@ -29,15 +29,13 @@ POST のあとは必ずリダイレクトする（PRGパターン）ので、リ
 **URL** : `/quiz`
 **役割**: 診断の中核。出題・回答受け取り・戻る・吉嵜発動・結果の保存。
 
-### 定数・セッションキー
+### 定数
 
 | 名前 | 役割 |
 |------|------|
 | `CRITICAL_CHOICE_ID = 1` | 「とても当てはまる」の choice_id。吉嵜質問でこれを選ぶとクリティカル |
-| `QUIZ_LIST`   | セッション：`List<Question>` 出題リスト |
-| `QUIZ_INDEX`  | セッション：`Integer` 今何問目か（0オリジン） |
-| `ANSWER_LIST` | セッション：`List<Answer>` 回答履歴 |
-| `CHOICES`     | セッション：`List<Choice>` 4段階の選択肢 |
+
+セッションのキーは `SessionKeys` に集約済み。診断中の状態（出題リスト・インデックス・回答・選択肢）の読み書きは `QuizSession` を経由する。
 
 ### メソッド
 
@@ -45,11 +43,10 @@ POST のあとは必ずリダイレクトする（PRGパターン）ので、リ
 |----------|------|
 | `doGet` | 診断中でなければ `StartServlet` へ。今の問題・番号・進捗％をセットして `quiz.jsp` へ |
 | `doPost` | `action` が `start` / `answer` / `back` で振り分け |
-| `start` | `clearQuiz()` → `QuestionDAO` で出題リストを作ってセッションへ → `/quiz` にリダイレクト |
-| `answer` | `questionId` が「今の問題」と一致し、選択肢が正しいときだけ受け付ける。<br>・吉嵜質問 × とても当てはまる → 吉嵜(15)として保存、Cookie で解放、`/critical?id=` へ<br>・最後の問題 → `saveResult()` して `/result?id=` へ<br>・それ以外 → 次の問題へ<br>連打対策で `synchronized (session)` の中で処理する |
-| `back` | 直前の回答を取り消して1問戻る |
+| `start` | `QuizSession.clear()` → `QuestionDAO` で出題リストを作って `QuizSession.start()` → `/quiz` にリダイレクト |
+| `answer` | `questionId` が「今の問題」と一致し、選択肢が正しいときだけ受け付ける。<br>・吉嵜質問 × とても当てはまる → 吉嵜(15)として保存、Cookie で解放、`/critical?id=` へ<br>・最後の問題 → `saveResult()` して `/result?id=` へ<br>・それ以外 → `QuizSession.addAnswer()` して次の問題へ<br>連打対策で `synchronized (quizSession.raw())` の中で処理する |
+| `back` | `QuizSession.undoLastAnswer()` で直前の回答を取り消して1問戻る |
 | `saveResult` | `ScoringDAO` → `ScoreCalculator` → `RoleDAO` + `RoleJudge` → `ResultDAO.insert`。失敗したら -1 |
-| `clearQuiz(session)` | 診断中のセッション情報を消す |
 
 ---
 
