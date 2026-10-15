@@ -1,19 +1,15 @@
 # `src/main/java/dao/`
 
-DBアクセス層。すべて H2 Database の JDBC を直叩き（フレームワーク未使用）。
+DBアクセス層。すべて H2 Database の JDBC を直接使う（フレームワーク未使用）。
+SQL の値はすべて `PreparedStatement` のプレースホルダで渡す（SQLインジェクション対策）。
+失敗時は `printStackTrace()` して、空リスト / null / -1 を返す。
 
 ---
 
 ## `DbConfig.java`
 
-**役割**: JDBC接続の共通設定。環境変数から `DB_URL` / `DB_USER` / `DB_PASS` を読み、
-未設定なら「学校のパソコンのデータベース」にいく。
+**役割**: JDBC接続の共通設定。環境変数 `DB_URL` / `DB_USER` / `DB_PASS` を読み、未設定ならデフォルトを使う。
 H2 JDBCドライバのロードもここで一回だけ行う。
-
-### クラス `DbConfig`
-
-- `final`・`private` コンストラクタ でインスタンス化不可（ユーティリティクラス）
-- static イニシャライザで `Class.forName("org.h2.Driver")` を実行
 
 | 定数 | 値 |
 |------|----|
@@ -21,54 +17,64 @@ H2 JDBCドライバのロードもここで一回だけ行う。
 | `DEFAULT_USER` | `sa` |
 | `DEFAULT_PASS` | `""` |
 
-| メソッド | 可視性 | 概要 |
-|----------|-------|------|
-| `getConnection()` | public static | 環境変数（なければデフォルト）で `DriverManager.getConnection(url, user, pass)` を返す |
-| `getEnvOrDefault(name, defaultValue)` | private static | `System.getenv(name)` が `null` ならデフォルトを返す小ヘルパー |
-
-> 全DAOはこの `DbConfig.getConnection()` だけを使って接続を取る。
-> 接続先の切り替えは Eclipse の Run Configuration → Environment から環境変数を設定するだけで済む（コードは触らない）。
+| メソッド | 概要 |
+|----------|------|
+| `getConnection()` | 環境変数（なければデフォルト）で接続を返す。全DAOはこれだけを使う |
 
 ---
 
 ## `QuestionDAO.java`
 
-**役割**: `question` / `answer_select` / `personality` テーブルを読んで、出題リストと選択肢を返す。
+| メソッド | 戻り値 | 概要 |
+|----------|--------|------|
+| `findQuiz()` | `List<Question>` | 出題リスト。各特性から通常質問をランダム5問 ＋ 特殊質問（フェイク・フレネミー）全部 ＋ 吉嵜質問1問 をシャッフル（今のデータだと28問） |
+| `findChoices()` | `List<Choice>` | 4段階の選択肢 |
 
-### クラス `QuestionDAO`
+---
 
-| 定数 | 概要 |
-|------|------|
-| `QUESTIONS_PER_PERSONALITY = 5` | 各特性から取り出す通常質問の数 |
-| `SELECT_COLUMNS` | `SELECT question_id, question, critical, type, personality_id FROM question ` の共通部分 |
+## `ScoringDAO.java`
 
-| メソッド | 可視性 | 戻り値 | 概要 |
-|----------|-------|--------|------|
-| `findQuiz()` | public | `List<Question>` | 出題リストを作る。<br>① `personality` から特性ID一覧を取得<br>② 各特性から `type='NORMAL'` の質問をランダム5問ずつ<br>③ `type <> 'NORMAL' AND critical = FALSE` の特殊質問（FAKE/FRENEMY）を全部<br>④ `critical = TRUE` の吉嵜質問を1問<br>⑤ `Collections.shuffle` で並び替え<br>失敗時は空リストを返す |
-| `findChoices()` | public | `List<Choice>` | `answer_select` を `choice_id` 順に全件返す。失敗時は空リスト |
-| `addQuestions(pStmt, list)` | private | `void` | 準備済み `PreparedStatement` を実行して結果を `Question` に詰めて `list` に追加するだけの小ヘルパー |
+| メソッド | 戻り値 | 概要 |
+|----------|--------|------|
+| `findScoring(answers)` | `Map<質問ID, Map<選択肢ID, 点数>>` | 回答した質問の `scoring` を全部取る。失敗したら null |
+| `findFixedScores(answers)` | `Map<特性ID, 固定スコア>` | 回答の中に `fixed_score` の組み合わせ（フレネミー質問 × とても当てはまる）があればその値。無ければ空。失敗したら null |
 
-> ランダム抽選は `ORDER BY RAND() LIMIT ?` で DB 側に任せている（アプリ側でシャッフルしていない）。
-> ドライバロードは `DbConfig` の static ブロック任せ。
+IN句は `?, ?, ?` を回答数だけ作って、値は全部プレースホルダで渡す。
+
+---
+
+## `RoleDAO.java`
+
+| メソッド | 戻り値 | 概要 |
+|----------|--------|------|
+| `findAll()` | `List<Role>` | 全役職をID順に、閾値（`role_threshold`）と一覧用の画像パス（その役職の `image` の1枚目）つきで返す |
+
+---
+
+## `ResultDAO.java`
+
+| メソッド | 戻り値 | 概要 |
+|----------|--------|------|
+| `insert(roleId, scores, userId)` | `int` | 結果を保存して `result_id` を返す。画像とおすすめアイテムは、その役職のものからランダムに1つ選んで入れる。`scores`（吉嵜のとき）と `userId`（未ログインのとき）は null 可。失敗したら -1 |
+| `findById(resultId)` | `Result` | 役職・画像・アイテムを JOIN して1件。スコアがあれば特性名（`personality`）をつけて `traits` に並べる |
+| `findByUser(userId)` | `List<Result>` | マイページの履歴（新しい順） |
+| `hasRole(userId, roleId)` | `boolean` | そのユーザーがその役職を出したことがあるか（吉嵜の解放判定） |
+
+`result` の5特性の列名は schema で固定なので、`SCORE_COLUMNS`（添字＝特性ID）で対応させている。
+
+---
+
+## `AccountDAO.java`
+
+| メソッド | 戻り値 | 概要 |
+|----------|--------|------|
+| `findByName(name)` | `Account` | 名前で探す。無ければ null |
+| `insert(name, passwordHash)` | `int` | 登録して `user_id` を返す。失敗（名前の重複も含む）したら -1 |
 
 ---
 
 ## `CounterDAO.java`
 
-**役割**: `result` テーブルの行数（＝これまでに診断を受けた人数）を数える。
-`StartServlet` が診断開始画面に表示する人数カウンターのために呼ぶ。
-
-### クラス `CounterDAO`
-
-| メソッド | 可視性 | 戻り値 | 概要 |
-|----------|-------|--------|------|
-| `Counter()` | public | `int` | `SELECT COUNT(*) FROM result` を実行し、件数を返す。失敗時は `-1` |
-
-> **命名規約**: 本来 Java のメソッド名は小文字始まり（`count()`）。既存のまま揃えているが、`StartServlet` の呼び出し箇所と合わせて将来リネームしてもいい。
-
----
-
-## 削除済み: `template.java`
-
-元々 DAO のJDBC接続情報の雛形としてコメントアウトされていたファイル。
-`DbConfig` ができたことで役割が終わったので削除済み。
+| メソッド | 戻り値 | 概要 |
+|----------|--------|------|
+| `Counter()` | `int` | `SELECT COUNT(*) FROM result`（＝診断人数。吉嵜も含む）。失敗時は -1 |

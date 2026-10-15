@@ -1,171 +1,72 @@
 # `src/main/webapp/`
 
-ビュー層（JSP）・JavaScript・画像・デプロイ記述。
+ビュー層（JSP）・JavaScript・画像。
 
 - JSPはすべて `WEB-INF/jsp/` に置いて、URL直打ちで表示できないようにしている
 - Tailwind CSS は WebJar から配信（`pom.xml` の `tailwindcss__browser`）
-- 共通ヘッダーは `common/header.jsp` を各JSPから `<%@ include %>` で取り込む
-
----
-
-## `WEB-INF/web.xml`
-
-デプロイ記述子。`welcome-file-list` を書いているが、
-URLは全部サーブレット側の `@WebServlet` で定義しているので、
-実質ほぼ初期値のまま。`display-name` が `frenemy-diagnosis`。
+- JSTL（`c:` / `fmt:`）を使う。値の表示は `<c:out>` でエスケープする（XSS対策）
+- 各画面は `<body class="flex min-h-screen flex-col ...">` ＋ `<main class="flex-1 ...">` で、フッターを下に固定
+- 共通部品は include で取り込む
+  ```jsp
+  <%@ include file="/WEB-INF/jsp/common/header.jsp" %>
+  <%@ include file="/WEB-INF/jsp/common/footer.jsp" %>
+  ```
 
 ---
 
 ## `WEB-INF/jsp/common/header.jsp`
 
-**役割**: 全画面共通のヘッダー。ロゴ・トップに戻るリンク・アカウントアイコン＆メニュー。
-各JSPから `<%@ include file="/WEB-INF/jsp/common/header.jsp" %>` で取り込む。
-
-主要素：
+ロゴ・メニュー・アカウントアイコン。
 
 | id | 内容 |
 |----|------|
-| `accountButton` | アカウントアイコン（丸いボタン）。クリックでメニュー開閉（`header.js`） |
-| `accountMenu`   | ドロップダウン本体。ユーザー名表示とログアウトボタン |
-| `logoutButton`  | ログアウト（**現状モック**。クリックで alert が出るだけ） |
+| `globalNav` | トップに戻る・役職一覧。スマホでは隠れていて、`menuButton` で開く。md(768px)以上では常に横並び |
+| `menuButton` | ハンバーガーボタン（スマホのみ） |
+| `accountButton` / `accountMenu` | アカウントアイコンとメニュー。ログイン中は名前・マイページ・ログアウト（`POST /logout`）、未ログインはログイン・新規登録 |
 
-**TODO**:
-- ユーザー名は `session.loginUser` を参照するように差し替え
-- ログアウトは `LogoutServlet` へ送るように差し替え
+## `WEB-INF/jsp/common/footer.jsp`
 
----
-
-## `WEB-INF/jsp/top.jsp`
-
-**役割**: トップページ（`TopServlet` からフォワード）。
-ヘッダー + `<main>トップページ</main>` だけのプレースホルダ。
+著作権表示。
 
 ---
 
-## `WEB-INF/jsp/start.jsp`
+## 画面
 
-**役割**: 診断開始画面（`StartServlet` からフォワード）。
-
-- `${count}` : これまでの診断人数（`CounterDAO.Counter()` 由来）
-- スタートボタンは `POST /quiz` に `action=start` を送って診断を開始する
-- 役職一覧ボタンは **現状未配線**（何も起きない）
-
----
-
-## `WEB-INF/jsp/quiz.jsp`
-
-**役割**: 診断中の1問を表示（`QuizServlet.doGet` からフォワード）。
-JSTL (`c:forEach` / `c:out`) を使う（`<%@ taglib prefix="c" uri="jakarta.tags.core" %>`）。
-
-リクエストスコープから読む値：
-
-| 変数 | 中身 |
-|------|------|
-| `${number}` / `${total}` | 進捗（例：3 / 32 問） |
-| `${progress}` | 0〜99の整数（％表示とプログレスバーの幅） |
-| `${question}` | `Question`。`${question.question}` で設問文、`${question.questionId}` を hidden input に埋め込む |
-| `${choices}` | `List<Choice>`。各選択肢を `name="choiceId" value="${choice.choiceId}"` のsubmitボタンとして出す |
-
-フォームは `POST /quiz` に `action=answer` + `questionId` + `choiceId` を送る。
-
----
-
-## `WEB-INF/jsp/critical.jsp`
-
-**役割**: クリティカル吉嵜の演出（`CriticalServlet` からフォワード）。
-
-- 背景色は焦げた赤茶 (`bg-[#1a0a00]`)
-- `<canvas id="explosion">` と `<div id="flash">` を全画面に敷いて、`js/explosion.js` が爆発＋フラッシュを描画
-- `<section id="reveal" hidden>` に吉嵜本体（現状は「吉嵜」の文字円）。`is-shown` クラスが付くとフェード＋ポンっと拡大
-- `@keyframes shake` / `flash` は画面全体の揺れと白飛び
-- 「もう一度診断する」ボタンは `POST /quiz` の `action=start`。「トップに戻る」は `/StartServlet` へ
-
-**TODO**: 吉嵜の画像ができたら、丸いプレースホルダを差し替え。
-
----
-
-## `WEB-INF/jsp/result.jsp`
-
-**役割**: 結果画面（`ResultServlet` からフォワード）。**現状は仮**。
-`${answerCount}` 問に回答しました、とだけ出して、もう一度ボタンを置く。
-
-**TODO**: スコア計算・役職判定ができたら作り直し。
-
----
-
-## `WEB-INF/jsp/error.jsp`
-
-**役割**: 汎用エラー画面。
-現状は `QuizServlet` が出題取得に失敗したときにだけ使われる。
-`${errorMessage}` を表示し、「トップに戻る」ボタンを置く（default="予期しないエラーが発生しました。"）。
-
----
-
-## `WEB-INF/jsp/login.jsp`
-
-**役割**: ログイン入力画面（`Login.doGet` からフォワード）。
-`name` と `pass` を `POST /Login` に送るだけ。
-
----
-
-## `WEB-INF/jsp/loginResult.jsp`
-
-**役割**: ログイン結果画面（`Login.doPost` からフォワード）。
-`<%@page import="model.User" %>` でセッションから `loginUser` を取り、
-null でなければ「ログイン成功」＋「フレネミー診断へ」のリンク、
-null なら「失敗」＋ `login.jsp` へのリンクを出す。
-
-> JSTL ではなくスクリプトレット (`<% ... %>`) を使っている古いスタイル。
-> 他のJSPに合わせて書き直すのが望ましい。
-
----
-
-## `view/hello.jsp`
-
-Eclipse WTP が作る動作確認用の "hello world" JSP。本機能ではない。
+| JSP | サーブレット | 内容 |
+|-----|-------------|------|
+| `start.jsp` | `StartServlet` | タイトル・人数カウンター（`${count}`、-1なら「―」）・スタート（`POST /quiz action=start`）・役職一覧・説明 |
+| `quiz.jsp` | `QuizServlet` | 進捗（`${number} / ${total}`・`${progress}%`）・質問・4つの選択肢ボタン（`questionId` と `choiceId` だけ送る）・戻る（2問目から） |
+| `critical.jsp` | `CriticalServlet` | 爆発演出（`js/explosion.js`）→ 吉嵜の画像と「結果を見る」 |
+| `result.jsp` | `ResultServlet` | 役職画像・「あなたの役職は〜です」（黒の役職は「お前は〜だ」＋赤黒の背景）・説明・スコアのバー・おすすめアイテム・画像保存・Xで共有・もう一度診断・トップへ・役職一覧・診断人数 |
+| `roles.jsp` | `RolesServlet` | 15役職の画像・名前・説明。吉嵜は解放するまで「？？？」 |
+| `login.jsp` | `Login` | ユーザー名・パスワード。エラー表示あり |
+| `register.jsp` | `RegisterServlet` | 新規登録。エラー表示あり |
+| `mypage.jsp` | `MyPageServlet` | ユーザー名と診断履歴（クリックで結果画面） |
+| `error.jsp` | 各サーブレット | `${errorMessage}` とトップに戻るボタン |
+| `top.jsp` | （未使用） | トップは開始画面にリダイレクトするようにしたので、今は使っていない |
 
 ---
 
 ## `js/header.js`
 
-**役割**: ヘッダーの `accountButton` クリックでメニュー (`accountMenu`) を開閉。
-メニュー外クリック or Escキーで閉じる。`logoutButton` クリックは alert 出すだけ（モック）。
-
-主要変数：
-- `button` : アカウントアイコン
-- `menu`   : ドロップダウン本体
-- `logoutButton` : ログアウトボタン
-
-関数：
-- `closeMenu()` : `menu.hidden = true` と `aria-expanded="false"`
-
----
+`setupToggle(button, menu, isOpen, setOpen)` で、アカウントメニューとハンバーガーメニューの開閉を同じ処理で行う。
+ボタンで開閉、メニューの外をクリック or Esc キーで閉じる。`aria-expanded` も切り替える。
 
 ## `js/explosion.js`
 
-**役割**: クリティカル吉嵜画面の演出。`critical.jsp` から defer 読み込み。
+クリティカル吉嵜画面の演出。火花220個＋衝撃波＋画面の揺れとフラッシュ → 1.2秒後に `#reveal` を表示。
+`prefers-reduced-motion` が on なら演出なしですぐ表示。
 
-主な動き：
-1. `prefers-reduced-motion: reduce` が on、または canvas が使えない環境では即座に吉嵜を表示して終了
-2. `<canvas>` の DPR 対応リサイズ
-3. 220個の火花パーティクルを中央から全方向に射出（重力・減衰あり）
-4. 衝撃波の輪 (`shockwave`) を広げる
-5. `body` に `shake` クラス、`#flash` に `flash` クラスを付けて揺れとフラッシュ
-6. 1.2秒後に `#reveal` を見せ、`is-shown` クラスでフェードイン
+## `js/result-image.js`
 
-パーティクル1個の形：
-
-```js
-{ x, y, vx, vy, size, life, decay, color }
-```
-
-関数：
-- `showYoshizaki()` : `reveal.hidden` を外して次フレームで `is-shown` を付与
-- `resize()` : canvas を DPR 込みでウィンドウサイズに合わせる
-- `draw()` : 1フレーム描画 → `requestAnimationFrame(draw)` で継続。全パーティクルが死んだら canvas を remove
+結果画面の「画像にして保存する」。`#resultCard` の `data-*`（見出し・役職名・画像・アイテム・黒かどうか）と
+`#scoreList li` の `data-name` / `data-score` を読んで canvas に描き、PNG でダウンロードする。
+（html2canvas は Tailwind v4 の色指定 `oklch()` を読めずに失敗するので使っていない）
 
 ---
 
-## `image/frenemy-log.png`
+## 画像
 
-ヘッダー左のロゴ画像（`common/header.jsp` が参照）。
+- `image/frenemy-log.png` : ロゴ
+- `image/role/1.svg`〜`15.svg` : 役職の**仮画像**（役職名の文字だけ）。番号は役職ID。
+  差し替えるときはファイルを置き換えるか、DBの `image.path` を変える（png でもOK）。
