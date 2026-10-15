@@ -5,7 +5,10 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * 診断結果（resultテーブル ＋ 役職・画像・アイテム）
+ * 診断結果（{@code result} テーブル ＋ 役職 ＋ 画像パス ＋ おすすめアイテム）。
+ *
+ * <p>結果画面 ({@code result.jsp}) とクリティカル画面 ({@code critical.jsp}) にそのまま渡される。
+ * 吉嵜（クリティカル）の結果はスコアを持たないので、{@link #getTraits()} は空リストになる。
  */
 public class Result implements Serializable {
 	private static final long serialVersionUID = 1L;
