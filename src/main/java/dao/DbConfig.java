@@ -5,6 +5,10 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public final class DbConfig {
+	/* 
+	 * AUTO SERVER = TRUE にしている理由
+	 * https://www.h2database.com/html/features.html#auto_mixed_mode
+	 * */
 	private static final String DEFAULT_URL = "jdbc:h2:~/frenemy;AUTO_SERVER=TRUE";
 	private static final String DEFAULT_USER = "sa";
 	private static final String DEFAULT_PASS = "";
