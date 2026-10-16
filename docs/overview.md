@@ -18,7 +18,7 @@ src/main/java/
 │   ├─ MyPageServlet      "/mypage"      マイページ（診断履歴）
 │   └─ YoshizakiUnlock    吉嵜の解放判定（Cookie＋アカウント）
 ├─ dao/                   DBアクセス
-│   ├─ DbConfig           JDBC接続の共通設定（環境変数読み込み）
+│   ├─ DbConfig           JDBC接続の共通設定（共用H2に固定）
 │   ├─ QuestionDAO        出題リスト・選択肢
 │   ├─ ScoringDAO         質問×選択肢の点数・フレネミー固定スコア
 │   ├─ RoleDAO            役職＋閾値
