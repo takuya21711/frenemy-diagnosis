@@ -27,4 +27,4 @@ H2用のスキーマ＋初期データ。冒頭に `DROP TABLE IF EXISTS` を並
 - 役職の説明 → `role.description`
 - 閾値 → `role_threshold`
 - おすすめアイテム → `item`（今のものは仮）
-- 画像 → `image.path`（今は `image/role/{id}.svg` の仮画像）
+- 画像 → `image.path`（`image/role/` のPNG。ファイル名は英語名で、役職IDとの対応は `db/schema.sql` の `INSERT INTO image` を参照）
