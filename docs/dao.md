@@ -8,18 +8,20 @@ SQL の値はすべて `PreparedStatement` のプレースホルダで渡す（S
 
 ## `DbConfig.java`
 
-**役割**: JDBC接続の共通設定。環境変数 `DB_URL` / `DB_USER` / `DB_PASS` を読み、未設定ならデフォルトを使う。
+**役割**: JDBC接続の共通設定。接続先は共用H2サーバー（TCPモード）に固定している（環境変数での切り替えはしない）。
 H2 JDBCドライバのロードもここで一回だけ行う。
 
 | 定数 | 値 |
 |------|----|
-| `DEFAULT_URL`  | `jdbc:h2:~/frenemy;AUTO_SERVER=TRUE` |
-| `DEFAULT_USER` | `sa` |
-| `DEFAULT_PASS` | `""` |
+| `URL`  | `jdbc:h2:tcp://10.23.104.249/~/frenemy` |
+| `USER` | `sa` |
+| `PASS` | `""` |
 
 | メソッド | 概要 |
 |----------|------|
-| `getConnection()` | 環境変数（なければデフォルト）で接続を返す。全DAOはこれだけを使う |
+| `getConnection()` | 上記の固定値で共用H2に接続して返す。全DAOはこれだけを使う |
+
+> 接続先IPが変わったときは `DbConfig.java` の `URL` を書き換える。
 
 ---
 

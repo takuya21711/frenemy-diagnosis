@@ -12,7 +12,7 @@ Eclipse + Tomcat + H2 Database で動かす前提で書いています（Docker 
 | JDK | **21**（JavaSE-21） | `pom.xml` の `maven.compiler.release` が 21 |
 | Eclipse | 2024-06 以降の **Enterprise Java and Web Developers** 版 | Jakarta EE / WTP / m2e が入っているもの |
 | Apache Tomcat | **11.x** | Jakarta Servlet 6.1 (`jakarta.*`) を使うので Tomcat 10 以降、11 推奨 |
-| H2 Database | 2.3.x | DAO が TCP モードで接続するので、H2 サーバーが別途起動している必要があります |
+| H2 Database | 2.3.x | DAO は共用 H2 サーバー（TCP モード）に接続するので、サーバー側で H2 が起動している必要があります |
 
 > Jakarta EE 系（`jakarta.servlet.*`）を使っているので、**Tomcat 9 ではビルドは通っても動きません**。必ず Tomcat 10 以降（できれば 11）を入れてください。
 
@@ -41,33 +41,26 @@ Eclipse + Tomcat + H2 Database で動かす前提で書いています（Docker 
 
 ## 2. DB（H2）の接続方法
 
-このアプリは H2 Database に接続します。
-接続先は **環境変数で切り替え** られるので、学校の共用H2・自PCのローカルH2のどちらでも、コードを書き換えずに動かせます。
+このアプリは、**共用の H2 サーバー 1 つだけ** に接続します。環境変数での切り替えや、ローカルファイルモードへのフォールバックはありません。
 
-### 2-1. 接続情報（環境変数）
+### 2-1. 接続情報
 
-接続情報は `src/main/java/dao/DbConfig.java` が以下の環境変数から読みます。
-未設定の場合は「自PCのローカルファイルモードH2」にフォールバックします（＝ 家で何も設定しなくても最低限動く）。
+接続情報は `src/main/java/dao/DbConfig.java` に固定で書かれています。
 
-| 環境変数 | 役割 | 未設定時のデフォルト |
-|----------|------|----------------------|
-| `DB_URL`  | JDBC URL   | `jdbc:h2:~/frenemy;AUTO_SERVER=TRUE` |
-| `DB_USER` | ユーザー   | `sa` |
-| `DB_PASS` | パスワード | （空） |
+| 項目 | 値 |
+|------|----|
+| JDBC URL   | `jdbc:h2:tcp://10.23.104.249/~/frenemy` |
+| ユーザー   | `sa` |
+| パスワード | （空） |
 
-利用シーン別の設定例：
-
-| 環境 | `DB_URL` に入れる値 |
-|------|---------------------|
-| 学校（共用H2サーバーに繋ぐ） | `jdbc:h2:tcp://10.23.104.249/~/frenemy` ※IPは当日の担当者に合わせる |
-| 家（自PCのファイルモード・デフォルトでOK） | 未設定（＝デフォルトが使われる） |
-| 家（自PCでTCPサーバーを立てて繋ぐ）       | `jdbc:h2:tcp://localhost/~/frenemy` |
-
-> `10.23.104.249` は **DBを立てている人のPCのローカルIP** です。固定値ではないので、学校で動かすときは当日の担当者のIPを `DB_URL` にセットしてください。
+> `10.23.104.249` は **DBを立てている人のPCのローカルIP** です。学校LAN内からしか繋がりません。
+> IP が変わったときは `DbConfig.java` の `URL` を書き換えてください。
 
 ドライバは `org.h2.Driver`（`pom.xml` の `com.h2database:h2` 経由で入ります）。`DbConfig` の static 初期化ブロックでロードされるので、各DAOでは意識不要です。
 
-### 2-2. 自分の PC で H2 サーバーを立てる場合
+### 2-2. H2 サーバーを立てる場合（DB 担当者向け）
+
+共用 DB を立てる人（`DbConfig.java` の IP の PC）だけが行う作業です。
 
 1. H2 の jar は Maven で落ちてきています。場所の例：
    ```
@@ -92,7 +85,7 @@ H2 Console から流し込むのが一番簡単です。
      org.h2.tools.Server -web -webAllowOthers -browser
    ```
 2. ブラウザが開くので、以下を入力して Connect。
-   - JDBC URL : `jdbc:h2:tcp://localhost/~/frenemy`（他人のサーバーに繋ぐときは IP を変える）
+   - JDBC URL : `jdbc:h2:tcp://10.23.104.249/~/frenemy`（サーバーを立てている PC 上で開くなら `localhost` でも可）
    - ユーザー : `sa`
    - パスワード : 空
 3. `db/schema.sql` の中身を貼り付けて `Run`。
@@ -101,47 +94,8 @@ H2 Console から流し込むのが一番簡単です。
 ### 2-4. アプリから繋がらないとき
 
 - `JDBCドライバを読み込めませんでした` → `pom.xml` に `h2` が入っているか、`Maven` → `プロジェクトの更新` を実行。
-- `Connection refused` → H2 サーバー側が起動していない / IP が違う / ファイアウォールでブロック。
+- `Connection refused` / `タイムアウト` → H2 サーバー側が起動していない / IP が違う（`DbConfig.java` の `URL` を確認） / ファイアウォールでブロック / 学校LANに繋がっていない。
 - `Database "~/frenemy" not found` → H2 サーバーを `-ifNotExists` 付きで起動していない、またはサーバー側の `~/frenemy.mv.db` がまだ作られていない。先に `db/schema.sql` を流してください。
-
-### 2-5. 家で開発する場合（環境変数で切り替え）
-
-学校LAN外からは共用H2サーバー（`10.23.104.249`）に繋がらないので、
-自PCのローカルH2を使います。手順は 2 ステップだけ。
-
-**① 自PCのH2にスキーマを流す（初回のみ）**
-
-1. H2 Console を起動する。
-   ```
-   java -cp ~/.m2/repository/com/h2database/h2/2.3.232/h2-2.3.232.jar \
-     org.h2.tools.Server -web -browser
-   ```
-2. ブラウザで以下を入力して Connect。
-   - JDBC URL : `jdbc:h2:~/frenemy`
-   - ユーザー : `sa`
-   - パスワード : 空
-3. `db/schema.sql` の中身を貼り付けて `Run`。
-
-**② Eclipse の実行構成で環境変数を設定**
-
-デフォルトで `jdbc:h2:~/frenemy;AUTO_SERVER=TRUE` を見るので、
-**家で動かすだけなら環境変数は未設定でOK**。
-学校の共用DBに切り替えるときだけ、下の手順で `DB_URL` を上書きします。
-
-1. Eclipse のメニュー `実行` → `実行構成...`。
-2. 左ペインから `Apache Tomcat` 以下の対象サーバーを選択。
-3. 右ペインの `環境` タブを開く → `追加...`。
-4. 以下を追加：
-
-   | 名前 | 値 |
-   |------|------|
-   | `DB_URL`  | `jdbc:h2:tcp://10.23.104.249/~/frenemy` （学校で共用DBに繋ぐ日だけ） |
-   | `DB_USER` | `sa` （デフォルトでOK、省略可） |
-   | `DB_PASS` | （空、省略可） |
-
-5. `適用` → `実行`。
-
-> 家 ⇔ 学校 を切り替えるたびに `DB_URL` を書き換える／チェックボックスで有効無効を切り替える、という運用になります。コード側は触りません。
 
 ---
 

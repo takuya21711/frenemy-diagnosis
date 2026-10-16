@@ -22,7 +22,7 @@ src/main/java/
 │   ├─ QuizSession        診断中のセッション状態ラッパー
 │   └─ WebUtils           エラー画面へのフォワード共通化
 ├─ dao/                   DBアクセス
-│   ├─ DbConfig           JDBC接続の共通設定（環境変数読み込み）
+│   ├─ DbConfig           JDBC接続の共通設定（共用H2に固定）
 │   ├─ QuestionDAO        出題リスト・選択肢
 │   ├─ ScoringDAO         質問×選択肢の点数・フレネミー固定スコア
 │   ├─ RoleDAO            役職＋閾値
