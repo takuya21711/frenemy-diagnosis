@@ -13,7 +13,7 @@ public class LoginLogic {
 	/** 名前の最大文字数（{@code account.name} の列長に合わせる） */
 	public static final int NAME_MAX = 50;
 	/** パスワードの最小文字数 */
-	public static final int PASS_MIN = 4;
+	public static final int PASS_MIN = 8;
 
 	/**
 	 * ログイン判定。
