@@ -9,7 +9,7 @@ public class LoginLogic {
 	/** 名前の最大文字数（accountテーブルの name 列に合わせる） */
 	public static final int NAME_MAX = 50;
 	/** パスワードの最小文字数 */
-	public static final int PASS_MIN = 4;
+	public static final int PASS_MIN = 8;
 
 	/**
 	 * 名前とパスワードが合っていればそのユーザーを返す。合っていなければ null
