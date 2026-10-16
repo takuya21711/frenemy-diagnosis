@@ -49,7 +49,7 @@ src/main/webapp/
 │   └─ result-image.js    結果を画像(PNG)にして保存
 └─ image/
     ├─ frenemy-log.png    ロゴ
-    └─ role/1.svg〜15.svg 役職の仮画像
+    └─ role/*.png         役職画像（15枚。ファイル名は英語名）
 
 db/schema.sql             H2のスキーマ＋初期データ
 ```

@@ -284,9 +284,23 @@ INSERT INTO role (id, name, description, is_black) VALUES
     (14, '狂人',     '場の秩序を破壊することに快感を覚えるカオスメーカー。論理的な会話が通じず、自分の利益すら無視して周りを混乱の渦に巻き込む生粋のトラブル屋。', TRUE),
     (15, '吉嵜',     '狼の影を見た瞬間、あなたの理性が爆発した。すべての測定不能なパラメータを凌駕し、この世界のルールを破壊した絶対的存在。あと変態。＾-＾', FALSE);  -- クリティカル専用。閾値なし
 
--- 役職画像（仮のSVG。差し替えるときは path を変えるだけでOK）
-INSERT INTO image (role_id, path)
-SELECT id, 'image/role/' || id || '.svg' FROM role;
+-- 役職画像（src/main/webapp/image/role/ のPNG。ファイル名は英語名なので役職IDと1件ずつ対応させる）
+INSERT INTO image (role_id, path) VALUES
+    ( 1, 'image/role/smn.png'),            -- 市民
+    ( 2, 'image/role/knight.png'),         -- 騎士
+    ( 3, 'image/role/werewolf.png'),       -- 人狼
+    ( 4, 'image/role/dictator.png'),       -- 独裁者
+    ( 5, 'image/role/fortune-teller.png'), -- 占い師
+    ( 6, 'image/role/medium.png'),         -- 霊媒師
+    ( 7, 'image/role/black-cat.png'),      -- 黒猫
+    ( 8, 'image/role/king.png'),           -- 王様
+    ( 9, 'image/role/neet.png'),           -- ニート
+    (10, 'image/role/drunkard.png'),       -- 酔っ払い
+    (11, 'image/role/dog.png'),            -- 犬
+    (12, 'image/role/phantom-thief.png'),  -- 怪盗
+    (13, 'image/role/bakery.png'),         -- パン屋
+    (14, 'image/role/madman.png'),         -- 狂人
+    (15, 'image/role/yoshizaki.png');      -- 吉嵜
 
 -- おすすめアイテム（仮）
 INSERT INTO item (role_id, name) VALUES

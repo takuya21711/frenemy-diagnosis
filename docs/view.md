@@ -68,5 +68,5 @@
 ## 画像
 
 - `image/frenemy-log.png` : ロゴ
-- `image/role/1.svg`〜`15.svg` : 役職の**仮画像**（役職名の文字だけ）。番号は役職ID。
-  差し替えるときはファイルを置き換えるか、DBの `image.path` を変える（png でもOK）。
+- `image/role/*.png` : 役職画像（15枚）。ファイル名は英語名（`smn.png` = 市民 など）で、役職IDとの対応は `db/schema.sql` の `INSERT INTO image` にある。
+  差し替えるときはファイルを置き換えるか、DBの `image.path` を変える。
